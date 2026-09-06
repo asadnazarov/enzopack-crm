@@ -14,6 +14,11 @@ const TABS = [
   { key: 'cash', label: 'Касса' },
 ] as const
 
+function categoryLabel(category: string | null): string | null {
+  if (category === 'order_payment') return 'Оплата по заказу'
+  return category
+}
+
 export function FinancePage() {
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('cash')
   const { data: balance } = useCashBalance()
@@ -119,8 +124,10 @@ export function FinancePage() {
               {formatMoney(Number(t.amount))}
             </span>
             <span className="text-brand-gray-dark truncate flex-1 mx-3">
-              {t.category ? `${t.category} · ` : ''}
-              {t.description}
+              {categoryLabel(t.category) ? `${categoryLabel(t.category)} · ` : ''}
+              {t.category === 'order_payment' && t.related_client
+                ? t.related_client.name
+                : t.description}
             </span>
             <span className="text-brand-gray-dark whitespace-nowrap">
               {formatDate(t.transaction_date)}
