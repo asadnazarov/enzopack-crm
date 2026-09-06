@@ -35,7 +35,7 @@ export function PhotoUploader({ value, onChange, folder }: PhotoUploaderProps) {
   return (
     <div className="relative w-full h-44 rounded-xl overflow-hidden bg-brand-gray border border-brand-border flex items-center justify-center group">
       {previewUrl ? (
-        <img src={previewUrl} alt="" className="w-full h-full object-cover" />
+        <img src={previewUrl} alt="" className="w-full h-full object-contain" />
       ) : (
         <span className="text-brand-gray-dark text-sm">Нет фото</span>
       )}

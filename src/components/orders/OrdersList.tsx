@@ -28,7 +28,7 @@ export function OrdersList({ orders, onAdvance, onCancel, onOpen }: OrdersListPr
           >
             <div className="w-12 h-12 rounded-lg bg-brand-gray overflow-hidden shrink-0 flex items-center justify-center">
               {photo ? (
-                <img src={photo} alt="" className="w-full h-full object-cover" />
+                <img src={photo} alt="" className="w-full h-full object-contain" />
               ) : (
                 <span className="text-[10px] text-brand-gray-dark">#{order.product?.code}</span>
               )}

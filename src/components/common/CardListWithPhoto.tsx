@@ -51,7 +51,7 @@ export function CardListWithPhoto({
               >
                 <div className="h-32 bg-brand-gray flex items-center justify-center overflow-hidden">
                   {photo ? (
-                    <img src={photo} alt="" className="w-full h-full object-cover" />
+                    <img src={photo} alt="" className="w-full h-full object-contain" />
                   ) : (
                     <span className="text-brand-gray-dark text-xs">Нет фото</span>
                   )}

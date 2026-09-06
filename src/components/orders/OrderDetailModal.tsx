@@ -83,7 +83,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
       photoSlot={
         photo ? (
           <div className="w-full h-32 rounded-xl overflow-hidden bg-brand-gray">
-            <img src={photo} alt="" className="w-full h-full object-cover" />
+            <img src={photo} alt="" className="w-full h-full object-contain" />
           </div>
         ) : undefined
       }
