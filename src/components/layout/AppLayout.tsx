@@ -17,8 +17,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen flex flex-col bg-brand-gray">
       <header className="sticky top-0 z-30 bg-brand-black text-white">
         <div className="max-w-6xl mx-auto px-4 md:px-8">
-          <div className="h-20 flex items-center">
-            <img src={logo} alt="EnzoPack" className="h-16 w-16 rounded-xl object-contain" />
+          <div className="py-4 flex items-center">
+            <img src={logo} alt="EnzoPack" className="h-32 w-32 rounded-2xl object-contain" />
           </div>
           <nav className="flex items-center gap-1 overflow-x-auto -mb-px pb-0 scrollbar-none">
             {NAV_ITEMS.map((item) => (
