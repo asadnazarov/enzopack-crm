@@ -51,6 +51,24 @@ export function useCreateOrder() {
   })
 }
 
+export function useUpdateOrderDetails() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: {
+      orderId: string
+      client_id: string
+      delivery_date: string | null
+      unit_price: number
+      notes: string | null
+    }) => {
+      const { orderId, ...rest } = input
+      const { error } = await supabase.from('orders').update(rest).eq('id', orderId)
+      if (error) throw error
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+  })
+}
+
 export function useUpdateOrderStatus() {
   const qc = useQueryClient()
   return useMutation({

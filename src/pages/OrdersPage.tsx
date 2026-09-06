@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { OrderDetailModal } from '../components/orders/OrderDetailModal'
 import { OrderFormModal } from '../components/orders/OrderFormModal'
 import { OrdersList } from '../components/orders/OrdersList'
 import { useOrders, useUpdateOrderStatus } from '../hooks/useOrders'
@@ -9,6 +10,8 @@ export function OrdersPage() {
   const { data: orders = [], isLoading } = useOrders()
   const updateStatus = useUpdateOrderStatus()
   const [formOpen, setFormOpen] = useState(false)
+  const [openOrderId, setOpenOrderId] = useState<string | null>(null)
+  const openOrder = orders.find((o) => o.id === openOrderId) ?? null
 
   function handleAdvance(order: Order) {
     const nextIndex = ORDER_STATUS_FLOW.indexOf(order.status) + 1
@@ -37,10 +40,16 @@ export function OrdersPage() {
       {isLoading ? (
         <div className="text-brand-gray-dark">Загрузка…</div>
       ) : (
-        <OrdersList orders={orders} onAdvance={handleAdvance} onCancel={handleCancel} />
+        <OrdersList
+          orders={orders}
+          onAdvance={handleAdvance}
+          onCancel={handleCancel}
+          onOpen={(order) => setOpenOrderId(order.id)}
+        />
       )}
 
       <OrderFormModal open={formOpen} onClose={() => setFormOpen(false)} />
+      <OrderDetailModal order={openOrder} onClose={() => setOpenOrderId(null)} />
     </div>
   )
 }

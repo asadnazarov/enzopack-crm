@@ -8,9 +8,10 @@ interface OrdersListProps {
   orders: Order[]
   onAdvance: (order: Order) => void
   onCancel: (order: Order) => void
+  onOpen: (order: Order) => void
 }
 
-export function OrdersList({ orders, onAdvance, onCancel }: OrdersListProps) {
+export function OrdersList({ orders, onAdvance, onCancel, onOpen }: OrdersListProps) {
   if (orders.length === 0) {
     return <div className="text-center text-brand-gray-dark py-16">Заказов пока нет</div>
   }
@@ -23,7 +24,8 @@ export function OrdersList({ orders, onAdvance, onCancel }: OrdersListProps) {
         return (
           <div
             key={order.id}
-            className="flex items-center gap-3 bg-white border border-brand-border rounded-xl p-3"
+            onClick={() => onOpen(order)}
+            className="flex items-center gap-3 bg-white border border-brand-border rounded-xl p-3 cursor-pointer hover:border-brand-yellow hover:shadow-sm transition"
           >
             <div className="w-12 h-12 rounded-lg bg-brand-gray overflow-hidden shrink-0 flex items-center justify-center">
               {photo ? (
@@ -62,7 +64,10 @@ export function OrdersList({ orders, onAdvance, onCancel }: OrdersListProps) {
             {canCancel && (
               <button
                 type="button"
-                onClick={() => onCancel(order)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onCancel(order)
+                }}
                 className="text-brand-gray-dark hover:text-red-600 transition text-sm"
                 title="Отменить заказ"
               >
