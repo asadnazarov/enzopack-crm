@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { compressImage } from '../../lib/imageCompression'
 import { MEDIA_BUCKET, publicMediaUrl, supabase } from '../../lib/supabaseClient'
 
 interface PhotoUploaderProps {
@@ -15,14 +16,17 @@ export function PhotoUploader({ value, onChange, folder }: PhotoUploaderProps) {
   async function handleFile(file: File) {
     setUploading(true)
     try {
-      const ext = file.name.split('.').pop()
+      const optimized = await compressImage(file)
+      const ext = optimized.name.split('.').pop()
       const path = `${folder}/${crypto.randomUUID()}.${ext}`
-      const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, file, {
+      const { error } = await supabase.storage.from(MEDIA_BUCKET).upload(path, optimized, {
         cacheControl: '3600',
         upsert: false,
       })
       if (error) throw error
       onChange(path)
+    } catch (error) {
+      alert(`Не удалось загрузить фото: ${error instanceof Error ? error.message : String(error)}`)
     } finally {
       setUploading(false)
     }

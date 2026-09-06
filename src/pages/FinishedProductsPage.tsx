@@ -41,17 +41,21 @@ export function FinishedProductsPage() {
 
   async function handleSave() {
     if (!editing?.name) return
-    await upsert.mutateAsync({
-      id: editing.id,
-      product: {
-        name: editing.name,
-        photo_url: editing.photo_url ?? null,
-        sale_price: Number(editing.sale_price ?? 0),
-        stock_qty: Number(editing.stock_qty ?? 0),
-      },
-      bom: bom.filter((l) => l.raw_material_id && l.qty_per_unit > 0),
-    })
-    setEditing(null)
+    try {
+      await upsert.mutateAsync({
+        id: editing.id,
+        product: {
+          name: editing.name,
+          photo_url: editing.photo_url ?? null,
+          sale_price: Number(editing.sale_price ?? 0),
+          stock_qty: Number(editing.stock_qty ?? 0),
+        },
+        bom: bom.filter((l) => l.raw_material_id && l.qty_per_unit > 0),
+      })
+      setEditing(null)
+    } catch (error) {
+      alert(`Не удалось сохранить продукт: ${error instanceof Error ? error.message : String(error)}`)
+    }
   }
 
   async function handleDelete() {

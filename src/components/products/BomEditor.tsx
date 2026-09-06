@@ -9,8 +9,6 @@ export interface BomLine {
 export interface NewMaterialInput {
   name: string
   unit: string
-  unit_price: number
-  stock_qty: number
 }
 
 interface BomEditorProps {
@@ -20,7 +18,7 @@ interface BomEditorProps {
   onCreateMaterial?: (input: NewMaterialInput) => Promise<string>
 }
 
-const EMPTY_NEW_MATERIAL: NewMaterialInput = { name: '', unit: 'шт', unit_price: 0, stock_qty: 0 }
+const EMPTY_NEW_MATERIAL: NewMaterialInput = { name: '', unit: '' }
 
 export function BomEditor({ lines, onChange, materials, onCreateMaterial }: BomEditorProps) {
   const [creating, setCreating] = useState<NewMaterialInput | null>(null)
@@ -39,12 +37,14 @@ export function BomEditor({ lines, onChange, materials, onCreateMaterial }: BomE
   }
 
   async function handleCreateMaterial() {
-    if (!creating?.name || !onCreateMaterial) return
+    if (!creating?.name || !creating.unit || !onCreateMaterial) return
     setSaving(true)
     try {
       const id = await onCreateMaterial(creating)
       onChange([...lines, { raw_material_id: id, qty_per_unit: 1 }])
       setCreating(null)
+    } catch (error) {
+      alert(`Не удалось создать сырьё: ${error instanceof Error ? error.message : String(error)}`)
     } finally {
       setSaving(false)
     }
@@ -128,29 +128,14 @@ export function BomEditor({ lines, onChange, materials, onCreateMaterial }: BomE
               />
               <input
                 type="text"
-                placeholder="Ед. изм."
+                placeholder="Ед. изм. (кг, м², рулон…)"
                 value={creating.unit}
                 onChange={(e) => setCreating({ ...creating, unit: e.target.value })}
-                className="w-24 border border-brand-border rounded-lg px-2 py-1.5 text-sm outline-none focus:border-brand-yellow"
+                className="w-40 border border-brand-border rounded-lg px-2 py-1.5 text-sm outline-none focus:border-brand-yellow"
               />
             </div>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                placeholder="Остаток"
-                value={creating.stock_qty}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => setCreating({ ...creating, stock_qty: Number(e.target.value) })}
-                className="flex-1 border border-brand-border rounded-lg px-2 py-1.5 text-sm outline-none focus:border-brand-yellow"
-              />
-              <input
-                type="number"
-                placeholder="Цена за единицу"
-                value={creating.unit_price}
-                onFocus={(e) => e.target.select()}
-                onChange={(e) => setCreating({ ...creating, unit_price: Number(e.target.value) })}
-                className="flex-1 border border-brand-border rounded-lg px-2 py-1.5 text-sm outline-none focus:border-brand-yellow"
-              />
+            <div className="text-xs text-brand-gray-dark">
+              Остаток и цену можно будет указать позже в разделе «Склад сырья».
             </div>
             <div className="flex justify-end gap-2">
               <button
@@ -163,10 +148,10 @@ export function BomEditor({ lines, onChange, materials, onCreateMaterial }: BomE
               <button
                 type="button"
                 onClick={handleCreateMaterial}
-                disabled={!creating.name || saving}
+                disabled={!creating.name || !creating.unit || saving}
                 className="text-xs font-semibold px-3 py-1 rounded-full bg-brand-yellow text-brand-black disabled:opacity-50"
               >
-                Создать и добавить
+                {saving ? 'Создаём…' : 'Создать и добавить'}
               </button>
             </div>
           </div>

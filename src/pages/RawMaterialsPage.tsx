@@ -14,7 +14,7 @@ import type { RawMaterial } from '../types/db'
 
 const EMPTY: Partial<RawMaterial> = {
   name: '',
-  unit: 'шт',
+  unit: '',
   photo_url: null,
   supplier_id: null,
   unit_price: 0,
@@ -35,8 +35,12 @@ export function RawMaterialsPage() {
 
   async function handleSave() {
     if (!editing?.name || !editing.unit) return
-    await upsert.mutateAsync(editing)
-    setEditing(null)
+    try {
+      await upsert.mutateAsync(editing)
+      setEditing(null)
+    } catch (error) {
+      alert(`Не удалось сохранить материал: ${error instanceof Error ? error.message : String(error)}`)
+    }
   }
 
   async function handleDelete() {
@@ -122,6 +126,7 @@ export function RawMaterialsPage() {
             <div className="grid grid-cols-2 gap-3">
               <FormField
                 label="Ед. измерения"
+                placeholder="кг, м², рулон…"
                 value={editing.unit ?? ''}
                 onChange={(e) => setEditing({ ...editing, unit: e.target.value })}
               />

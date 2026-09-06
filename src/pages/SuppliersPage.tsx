@@ -27,8 +27,12 @@ export function SuppliersPage() {
 
   async function handleSave() {
     if (!editing?.name) return
-    await upsert.mutateAsync(editing)
-    setEditing(null)
+    try {
+      await upsert.mutateAsync(editing)
+      setEditing(null)
+    } catch (error) {
+      alert(`Не удалось сохранить поставщика: ${error instanceof Error ? error.message : String(error)}`)
+    }
   }
 
   async function handleDelete() {

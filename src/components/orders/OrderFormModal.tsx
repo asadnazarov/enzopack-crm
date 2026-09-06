@@ -67,43 +67,47 @@ export function OrderFormModal({ open, onClose }: OrderFormModalProps) {
   async function handleSave() {
     if (!canSave) return
 
-    let finalClientId = clientId
-    if (!finalClientId && newClient?.name) {
-      finalClientId = await upsertClient.mutateAsync({
-        name: newClient.name,
-        company: newClient.company || null,
-        phone: newClient.phone || null,
+    try {
+      let finalClientId = clientId
+      if (!finalClientId && newClient?.name) {
+        finalClientId = await upsertClient.mutateAsync({
+          name: newClient.name,
+          company: newClient.company || null,
+          phone: newClient.phone || null,
+        })
+      }
+
+      let finalProductId = productId
+      let createdProductCode: string | null = null
+      if (isNewProduct) {
+        finalProductId = (await upsertProduct.mutateAsync({
+          product: { name: newProductName, sale_price: unitPrice, stock_qty: 0, photo_url: null },
+          bom: newProductBom.filter((l) => l.raw_material_id && l.qty_per_unit > 0),
+        })) as string
+
+        const { data: createdProduct } = await supabase
+          .from('finished_products')
+          .select('code')
+          .eq('id', finalProductId)
+          .single()
+        createdProductCode = createdProduct?.code ?? null
+      }
+
+      await createOrder.mutateAsync({
+        client_id: finalClientId,
+        product_id: finalProductId,
+        quantity,
+        delivery_date: deliveryDate || null,
+        unit_price: unitPrice,
       })
-    }
 
-    let finalProductId = productId
-    let createdProductCode: string | null = null
-    if (isNewProduct) {
-      finalProductId = (await upsertProduct.mutateAsync({
-        product: { name: newProductName, sale_price: unitPrice, stock_qty: 0, photo_url: null },
-        bom: newProductBom.filter((l) => l.raw_material_id && l.qty_per_unit > 0),
-      })) as string
-
-      const { data: createdProduct } = await supabase
-        .from('finished_products')
-        .select('code')
-        .eq('id', finalProductId)
-        .single()
-      createdProductCode = createdProduct?.code ?? null
-    }
-
-    await createOrder.mutateAsync({
-      client_id: finalClientId,
-      product_id: finalProductId,
-      quantity,
-      delivery_date: deliveryDate || null,
-      unit_price: unitPrice,
-    })
-
-    if (createdProductCode) {
-      setSuccessInfo(`Заказ создан. Новому продукту «${newProductName}» присвоен код #${createdProductCode}.`)
-    } else {
-      onClose()
+      if (createdProductCode) {
+        setSuccessInfo(`Заказ создан. Новому продукту «${newProductName}» присвоен код #${createdProductCode}.`)
+      } else {
+        onClose()
+      }
+    } catch (error) {
+      alert(`Не удалось создать заказ: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
