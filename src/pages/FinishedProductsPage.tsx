@@ -4,14 +4,14 @@ import { CardListWithPhoto } from '../components/common/CardListWithPhoto'
 import { EntityFormModal } from '../components/common/EntityFormModal'
 import { FormField } from '../components/common/FormField'
 import { PhotoUploader } from '../components/common/PhotoUploader'
-import { formatMoney, formatNumber } from '../lib/formatters'
+import { formatMoney, formatNumber, nextProductCodePreview } from '../lib/formatters'
 import {
   useDeleteProduct,
   useFinishedProducts,
   useProductBom,
   useUpsertProduct,
 } from '../hooks/useFinishedProducts'
-import { useRawMaterials } from '../hooks/useRawMaterials'
+import { useRawMaterials, useUpsertRawMaterial } from '../hooks/useRawMaterials'
 import type { FinishedProduct } from '../types/db'
 
 const EMPTY: Partial<FinishedProduct> = { name: '', photo_url: null, sale_price: 0, stock_qty: 0 }
@@ -20,6 +20,7 @@ export function FinishedProductsPage() {
   const [search, setSearch] = useState('')
   const { data: products = [], isLoading } = useFinishedProducts(search)
   const { data: materials = [] } = useRawMaterials()
+  const upsertMaterial = useUpsertRawMaterial()
   const upsert = useUpsertProduct()
   const del = useDeleteProduct()
   const [editing, setEditing] = useState<Partial<FinishedProduct> | null>(null)
@@ -130,6 +131,13 @@ export function FinishedProductsPage() {
               label="Название"
               value={editing.name ?? ''}
               onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+              suffix={
+                !editing.id ? (
+                  <span className="whitespace-nowrap text-xs font-semibold text-brand-yellow-dark bg-brand-yellow-light px-2 py-1 rounded-full">
+                    код #{nextProductCodePreview(products)}
+                  </span>
+                ) : undefined
+              }
             />
             <div className="grid grid-cols-2 gap-3">
               <FormField
@@ -150,7 +158,12 @@ export function FinishedProductsPage() {
                 Себестоимость считается автоматически из рецептуры: {formatMoney(Number(editing.cost_price ?? 0))}
               </div>
             )}
-            <BomEditor lines={bom} onChange={setBom} materials={materials} />
+            <BomEditor
+              lines={bom}
+              onChange={setBom}
+              materials={materials}
+              onCreateMaterial={(input) => upsertMaterial.mutateAsync(input) as Promise<string>}
+            />
           </>
         )}
       </EntityFormModal>

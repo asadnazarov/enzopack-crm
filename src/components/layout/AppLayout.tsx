@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import logo from '../../assets/logo/logo-black.jpg'
+import logoMark from '../../assets/logo/logo-mark.png'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Дашборд', end: true },
@@ -16,18 +16,16 @@ export function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-brand-gray">
       <header className="sticky top-0 z-30 bg-brand-black text-white">
-        <div className="max-w-6xl mx-auto px-4 md:px-8">
-          <div className="py-4 flex items-center">
-            <img src={logo} alt="EnzoPack" className="h-32 w-32 rounded-2xl object-contain" />
-          </div>
-          <nav className="flex items-center gap-1 overflow-x-auto -mb-px pb-0 scrollbar-none">
+        <div className="flex items-center gap-5 h-14 pl-2 pr-3 md:pl-3 md:pr-6">
+          <img src={logoMark} alt="EnzoPack" className="h-10 w-auto shrink-0 object-contain" />
+          <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
             {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `whitespace-nowrap px-3.5 py-2.5 text-sm font-medium border-b-2 transition ${
+                  `whitespace-nowrap px-3 py-2 text-sm font-medium border-b-2 transition ${
                     isActive
                       ? 'border-brand-yellow text-white'
                       : 'border-transparent text-white/60 hover:text-white/90'

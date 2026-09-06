@@ -30,3 +30,12 @@ export function startOfMonthISO(): string {
   const d = new Date()
   return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10)
 }
+
+/** Preview of the 3-digit code the DB trigger will assign to the next new product. */
+export function nextProductCodePreview(products: { code: string }[]): string {
+  const max = products.reduce((acc, p) => {
+    const n = Number(p.code)
+    return Number.isFinite(n) && n > acc ? n : acc
+  }, 0)
+  return String(max + 1).padStart(3, '0')
+}

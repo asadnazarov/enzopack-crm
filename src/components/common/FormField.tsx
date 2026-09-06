@@ -6,13 +6,18 @@ interface FormFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   suffix?: ReactNode
 }
 
-export function FormField({ label, error, suffix, className, ...rest }: FormFieldProps) {
+export function FormField({ label, error, suffix, className, type, onFocus, ...rest }: FormFieldProps) {
   return (
     <label className="flex flex-col gap-1">
       <span className="text-sm font-medium text-brand-ink">{label}</span>
       <div className="flex items-center gap-2">
         <input
           {...rest}
+          type={type}
+          onFocus={(e) => {
+            if (type === 'number') e.target.select()
+            onFocus?.(e)
+          }}
           className={`w-full border border-brand-border rounded-lg px-3 py-2 text-sm outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow-light transition ${className ?? ''}`}
         />
         {suffix}

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { EntityFormModal } from '../common/EntityFormModal'
 import { FormField } from '../common/FormField'
+import { supabase } from '../../lib/supabaseClient'
+import { nextProductCodePreview } from '../../lib/formatters'
 import { useClients, useUpsertClient } from '../../hooks/useClients'
 import { useCreateOrder } from '../../hooks/useOrders'
 import { useProductBom, useUpsertProduct } from '../../hooks/useFinishedProducts'
-import { useRawMaterials } from '../../hooks/useRawMaterials'
+import { useRawMaterials, useUpsertRawMaterial } from '../../hooks/useRawMaterials'
 import { useFinishedProducts } from '../../hooks/useFinishedProducts'
 import { BomEditor, type BomLine } from '../products/BomEditor'
 import { ShortageForecastPanel } from './ShortageForecastPanel'
@@ -21,6 +23,7 @@ export function OrderFormModal({ open, onClose }: OrderFormModalProps) {
   const createOrder = useCreateOrder()
   const upsertClient = useUpsertClient()
   const upsertProduct = useUpsertProduct()
+  const upsertMaterial = useUpsertRawMaterial()
 
   const [clientId, setClientId] = useState('')
   const [newClient, setNewClient] = useState<{ name: string; company: string; phone: string } | null>(null)
@@ -33,6 +36,7 @@ export function OrderFormModal({ open, onClose }: OrderFormModalProps) {
   const [quantity, setQuantity] = useState(1)
   const [unitPrice, setUnitPrice] = useState(0)
   const [deliveryDate, setDeliveryDate] = useState('')
+  const [successInfo, setSuccessInfo] = useState<string | null>(null)
 
   const { data: existingBom = [] } = useProductBom(isNewProduct ? undefined : productId)
 
@@ -47,6 +51,7 @@ export function OrderFormModal({ open, onClose }: OrderFormModalProps) {
       setQuantity(1)
       setUnitPrice(0)
       setDeliveryDate('')
+      setSuccessInfo(null)
     }
   }, [open])
 
@@ -72,11 +77,19 @@ export function OrderFormModal({ open, onClose }: OrderFormModalProps) {
     }
 
     let finalProductId = productId
+    let createdProductCode: string | null = null
     if (isNewProduct) {
       finalProductId = (await upsertProduct.mutateAsync({
         product: { name: newProductName, sale_price: unitPrice, stock_qty: 0, photo_url: null },
         bom: newProductBom.filter((l) => l.raw_material_id && l.qty_per_unit > 0),
       })) as string
+
+      const { data: createdProduct } = await supabase
+        .from('finished_products')
+        .select('code')
+        .eq('id', finalProductId)
+        .single()
+      createdProductCode = createdProduct?.code ?? null
     }
 
     await createOrder.mutateAsync({
@@ -86,10 +99,38 @@ export function OrderFormModal({ open, onClose }: OrderFormModalProps) {
       delivery_date: deliveryDate || null,
       unit_price: unitPrice,
     })
-    onClose()
+
+    if (createdProductCode) {
+      setSuccessInfo(`Заказ создан. Новому продукту «${newProductName}» присвоен код #${createdProductCode}.`)
+    } else {
+      onClose()
+    }
   }
 
   const saving = upsertClient.isPending || upsertProduct.isPending || createOrder.isPending
+
+  if (successInfo) {
+    return (
+      <EntityFormModal
+        open={open}
+        onClose={onClose}
+        title="Готово"
+        footer={
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg text-sm font-semibold bg-brand-yellow text-brand-black hover:brightness-95 transition"
+          >
+            Готово
+          </button>
+        }
+      >
+        <div className="text-sm text-brand-ink bg-brand-yellow-light border border-brand-yellow rounded-xl p-4">
+          {successInfo}
+        </div>
+      </EntityFormModal>
+    )
+  }
 
   return (
     <EntityFormModal
@@ -202,8 +243,18 @@ export function OrderFormModal({ open, onClose }: OrderFormModalProps) {
               label="Название продукта"
               value={newProductName}
               onChange={(e) => setNewProductName(e.target.value)}
+              suffix={
+                <span className="whitespace-nowrap text-xs font-semibold text-brand-yellow-dark bg-brand-yellow-light px-2 py-1 rounded-full">
+                  код #{nextProductCodePreview(products)}
+                </span>
+              }
             />
-            <BomEditor lines={newProductBom} onChange={setNewProductBom} materials={materials} />
+            <BomEditor
+              lines={newProductBom}
+              onChange={setNewProductBom}
+              materials={materials}
+              onCreateMaterial={(input) => upsertMaterial.mutateAsync(input) as Promise<string>}
+            />
             <button
               type="button"
               onClick={() => setIsNewProduct(false)}
