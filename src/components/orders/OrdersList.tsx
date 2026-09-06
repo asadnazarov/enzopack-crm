@@ -1,6 +1,5 @@
 import { StatusBadge } from '../common/StatusBadge'
 import { formatDate, formatMoney, formatNumber } from '../../lib/formatters'
-import { ORDER_STATUS_FLOW } from '../../types/db'
 import type { Order } from '../../types/db'
 import { publicMediaUrl } from '../../lib/supabaseClient'
 
@@ -20,7 +19,7 @@ export function OrdersList({ orders, onAdvance, onCancel, onOpen }: OrdersListPr
     <div className="flex flex-col gap-2">
       {orders.map((order) => {
         const photo = publicMediaUrl(order.product?.photo_url)
-        const canCancel = order.status !== 'delivered' && order.status !== 'cancelled'
+        const canCancel = order.status !== 'cancelled'
         return (
           <div
             key={order.id}
@@ -54,11 +53,7 @@ export function OrdersList({ orders, onAdvance, onCancel, onOpen }: OrdersListPr
 
             <StatusBadge
               status={order.status}
-              onAdvance={
-                ORDER_STATUS_FLOW.indexOf(order.status) < ORDER_STATUS_FLOW.length - 1
-                  ? () => onAdvance(order)
-                  : undefined
-              }
+              onAdvance={order.status !== 'cancelled' ? () => onAdvance(order) : undefined}
             />
 
             {canCancel && (

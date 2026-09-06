@@ -6,7 +6,7 @@ import { publicMediaUrl } from '../../lib/supabaseClient'
 import { formatMoney, formatNumber } from '../../lib/formatters'
 import { useClients } from '../../hooks/useClients'
 import { useUpdateOrderDetails, useUpdateOrderStatus } from '../../hooks/useOrders'
-import { ORDER_STATUS_FLOW, ORDER_STATUS_LABELS } from '../../types/db'
+import { ORDER_STATUS_FLOW } from '../../types/db'
 import type { Order } from '../../types/db'
 
 interface OrderDetailModalProps {
@@ -33,9 +33,9 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
     }
   }, [order])
 
-  const isTerminal = order ? order.status === 'delivered' || order.status === 'cancelled' : false
-  const nextIndex = order ? ORDER_STATUS_FLOW.indexOf(order.status) + 1 : -1
-  const canAdvance = !isTerminal && nextIndex >= 0 && nextIndex < ORDER_STATUS_FLOW.length
+  const isCancelled = order?.status === 'cancelled'
+  const nextIndex = order ? (ORDER_STATUS_FLOW.indexOf(order.status) + 1) % ORDER_STATUS_FLOW.length : -1
+  const canAdvance = !isCancelled && nextIndex >= 0
 
   async function handleSave() {
     if (!order) return
@@ -54,11 +54,9 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
   }
 
   async function handleAdvance() {
-    if (!order) return
-    const next = ORDER_STATUS_FLOW[nextIndex]
-    if (!next) return
+    if (!order || nextIndex < 0) return
     try {
-      await updateStatus.mutateAsync({ orderId: order.id, status: next })
+      await updateStatus.mutateAsync({ orderId: order.id, status: ORDER_STATUS_FLOW[nextIndex] })
     } catch (error) {
       alert(`Не удалось изменить статус: ${error instanceof Error ? error.message : String(error)}`)
     }
@@ -91,7 +89,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
       }
       footer={
         <>
-          {!isTerminal && (
+          {!isCancelled && (
             <button
               type="button"
               onClick={handleCancel}
@@ -131,9 +129,9 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
             </div>
             <StatusBadge status={order.status} onAdvance={canAdvance ? handleAdvance : undefined} />
           </div>
-          {isTerminal && (
+          {isCancelled && (
             <div className="text-xs text-brand-gray-dark">
-              Заказ в статусе «{ORDER_STATUS_LABELS[order.status]}» — финальный, статус больше не меняется.
+              Заказ отменён — статус больше не меняется.
             </div>
           )}
 

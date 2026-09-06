@@ -16,8 +16,8 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, onAdvance, disabled }: StatusBadgeProps) {
-  const nextIndex = ORDER_STATUS_FLOW.indexOf(status) + 1
-  const canAdvance = status !== 'cancelled' && nextIndex < ORDER_STATUS_FLOW.length && !!onAdvance
+  const nextStatus = ORDER_STATUS_FLOW[(ORDER_STATUS_FLOW.indexOf(status) + 1) % ORDER_STATUS_FLOW.length]
+  const canAdvance = status !== 'cancelled' && !!onAdvance
 
   return (
     <button
@@ -30,7 +30,7 @@ export function StatusBadge({ status, onAdvance, disabled }: StatusBadgeProps) {
       className={`relative overflow-hidden rounded-full px-3 py-1 text-xs font-semibold transition ${STATUS_STYLES[status]} ${
         canAdvance ? 'cursor-pointer hover:brightness-95 active:scale-95' : 'cursor-default opacity-90'
       }`}
-      title={canAdvance ? `Перевести в «${ORDER_STATUS_LABELS[ORDER_STATUS_FLOW[nextIndex]]}»` : undefined}
+      title={canAdvance ? `Перевести в «${ORDER_STATUS_LABELS[nextStatus]}»` : undefined}
     >
       <AnimatePresence mode="wait">
         <motion.span

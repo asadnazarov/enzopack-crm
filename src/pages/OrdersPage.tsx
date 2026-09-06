@@ -14,9 +14,9 @@ export function OrdersPage() {
   const openOrder = orders.find((o) => o.id === openOrderId) ?? null
 
   function handleAdvance(order: Order) {
-    const nextIndex = ORDER_STATUS_FLOW.indexOf(order.status) + 1
-    const next = ORDER_STATUS_FLOW[nextIndex]
-    if (next) updateStatus.mutate({ orderId: order.id, status: next })
+    if (order.status === 'cancelled') return
+    const nextIndex = (ORDER_STATUS_FLOW.indexOf(order.status) + 1) % ORDER_STATUS_FLOW.length
+    updateStatus.mutate({ orderId: order.id, status: ORDER_STATUS_FLOW[nextIndex] })
   }
 
   function handleCancel(order: Order) {
