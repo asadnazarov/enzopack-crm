@@ -9,6 +9,7 @@ export interface BomLine {
 export interface NewMaterialInput {
   name: string
   unit: string
+  stock_qty: number
 }
 
 interface BomEditorProps {
@@ -18,7 +19,7 @@ interface BomEditorProps {
   onCreateMaterial?: (input: NewMaterialInput) => Promise<string>
 }
 
-const EMPTY_NEW_MATERIAL: NewMaterialInput = { name: '', unit: '' }
+const EMPTY_NEW_MATERIAL: NewMaterialInput = { name: '', unit: '', stock_qty: 0 }
 
 export function BomEditor({ lines, onChange, materials, onCreateMaterial }: BomEditorProps) {
   const [creating, setCreating] = useState<NewMaterialInput | null>(null)
@@ -118,24 +119,32 @@ export function BomEditor({ lines, onChange, materials, onCreateMaterial }: BomE
 
         {creating && (
           <div className="flex flex-col gap-2 border border-brand-border rounded-lg p-3 mt-1">
+            <input
+              type="text"
+              placeholder="Название сырья"
+              value={creating.name}
+              onChange={(e) => setCreating({ ...creating, name: e.target.value })}
+              className="border border-brand-border rounded-lg px-2 py-1.5 text-sm outline-none focus:border-brand-yellow"
+            />
             <div className="flex gap-2">
               <input
-                type="text"
-                placeholder="Название сырья"
-                value={creating.name}
-                onChange={(e) => setCreating({ ...creating, name: e.target.value })}
-                className="flex-1 border border-brand-border rounded-lg px-2 py-1.5 text-sm outline-none focus:border-brand-yellow"
+                type="number"
+                placeholder="Остаток"
+                value={creating.stock_qty}
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setCreating({ ...creating, stock_qty: Number(e.target.value) })}
+                className="w-24 border border-brand-border rounded-lg px-2 py-1.5 text-sm outline-none focus:border-brand-yellow"
               />
               <input
                 type="text"
                 placeholder="Ед. изм. (кг, м², рулон…)"
                 value={creating.unit}
                 onChange={(e) => setCreating({ ...creating, unit: e.target.value })}
-                className="w-40 border border-brand-border rounded-lg px-2 py-1.5 text-sm outline-none focus:border-brand-yellow"
+                className="flex-1 border border-brand-border rounded-lg px-2 py-1.5 text-sm outline-none focus:border-brand-yellow"
               />
             </div>
             <div className="text-xs text-brand-gray-dark">
-              Остаток и цену можно будет указать позже в разделе «Склад сырья».
+              Цену за единицу можно будет указать позже в разделе «Склад сырья».
             </div>
             <div className="flex justify-end gap-2">
               <button
