@@ -3,7 +3,7 @@ import { CardListWithPhoto } from '../components/common/CardListWithPhoto'
 import { EntityFormModal } from '../components/common/EntityFormModal'
 import { FormField } from '../components/common/FormField'
 import { PhotoUploader } from '../components/common/PhotoUploader'
-import { formatNumber } from '../lib/formatters'
+import { formatNumber, getErrorMessage } from '../lib/formatters'
 import {
   useDeleteRawMaterial,
   useRawMaterials,
@@ -36,10 +36,18 @@ export function RawMaterialsPage() {
   async function handleSave() {
     if (!editing?.name || !editing.unit) return
     try {
-      await upsert.mutateAsync(editing)
+      await upsert.mutateAsync({
+        id: editing.id,
+        name: editing.name,
+        unit: editing.unit,
+        photo_url: editing.photo_url ?? null,
+        supplier_id: editing.supplier_id ?? null,
+        unit_price: Number(editing.unit_price ?? 0),
+        stock_qty: Number(editing.stock_qty ?? 0),
+      })
       setEditing(null)
     } catch (error) {
-      alert(`Не удалось сохранить материал: ${error instanceof Error ? error.message : String(error)}`)
+      alert(`Не удалось сохранить материал: ${getErrorMessage(error)}`)
     }
   }
 

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { compressImage } from '../../lib/imageCompression'
+import { getErrorMessage } from '../../lib/formatters'
 import { MEDIA_BUCKET, publicMediaUrl, supabase } from '../../lib/supabaseClient'
 
 interface PhotoUploaderProps {
@@ -26,7 +27,7 @@ export function PhotoUploader({ value, onChange, folder }: PhotoUploaderProps) {
       if (error) throw error
       onChange(path)
     } catch (error) {
-      alert(`Не удалось загрузить фото: ${error instanceof Error ? error.message : String(error)}`)
+      alert(`Не удалось загрузить фото: ${getErrorMessage(error)}`)
     } finally {
       setUploading(false)
     }

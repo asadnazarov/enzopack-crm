@@ -3,7 +3,10 @@ import { CardListWithPhoto } from '../components/common/CardListWithPhoto'
 import { EntityFormModal } from '../components/common/EntityFormModal'
 import { FormField } from '../components/common/FormField'
 import { PhotoUploader } from '../components/common/PhotoUploader'
+import { formatDate, formatMoney, formatNumber, getErrorMessage } from '../lib/formatters'
 import { useClients, useDeleteClient, useUpsertClient } from '../hooks/useClients'
+import { useClientOrders } from '../hooks/useOrders'
+import { ORDER_STATUS_LABELS } from '../types/db'
 import type { Client } from '../types/db'
 
 const EMPTY: Partial<Client> = { name: '', company: '', phone: '', logo_url: null, notes: '' }
@@ -13,6 +16,7 @@ export function ClientsPage() {
   const upsert = useUpsertClient()
   const del = useDeleteClient()
   const [editing, setEditing] = useState<Partial<Client> | null>(null)
+  const { data: orders = [] } = useClientOrders(editing?.id)
 
   function openEdit(id: string) {
     setEditing(clients.find((c) => c.id === id) ?? EMPTY)
@@ -24,7 +28,7 @@ export function ClientsPage() {
       await upsert.mutateAsync(editing)
       setEditing(null)
     } catch (error) {
-      alert(`Не удалось сохранить клиента: ${error instanceof Error ? error.message : String(error)}`)
+      alert(`Не удалось сохранить клиента: ${getErrorMessage(error)}`)
     }
   }
 
@@ -111,6 +115,40 @@ export function ClientsPage() {
               value={editing.notes ?? ''}
               onChange={(e) => setEditing({ ...editing, notes: e.target.value })}
             />
+
+            {editing.id && (
+              <div className="mt-2">
+                <div className="text-sm font-medium text-brand-ink mb-2">История заказов</div>
+                {orders.length === 0 ? (
+                  <div className="text-xs text-brand-gray-dark">Заказов пока не было</div>
+                ) : (
+                  <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto">
+                    {orders.map((o) => (
+                      <div
+                        key={o.id}
+                        className="flex items-center justify-between gap-2 text-xs bg-brand-gray rounded-lg px-3 py-2"
+                      >
+                        <span className="flex-1 min-w-0 truncate">
+                          #{o.product?.code} {o.product?.name}
+                        </span>
+                        <span className="whitespace-nowrap">
+                          {formatNumber(Number(o.quantity))} шт × {formatMoney(Number(o.unit_price))}
+                        </span>
+                        <span className="whitespace-nowrap font-semibold">
+                          {formatMoney(Number(o.total_amount))}
+                        </span>
+                        <span className="whitespace-nowrap text-brand-gray-dark">
+                          {formatDate(o.created_at)}
+                        </span>
+                        <span className="whitespace-nowrap text-brand-gray-dark">
+                          {ORDER_STATUS_LABELS[o.status]}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </EntityFormModal>

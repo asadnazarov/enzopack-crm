@@ -3,7 +3,7 @@ import { CardListWithPhoto } from '../components/common/CardListWithPhoto'
 import { EntityFormModal } from '../components/common/EntityFormModal'
 import { FormField } from '../components/common/FormField'
 import { PhotoUploader } from '../components/common/PhotoUploader'
-import { formatDate, formatMoney } from '../lib/formatters'
+import { formatDate, formatMoney, getErrorMessage } from '../lib/formatters'
 import {
   useDeleteSupplier,
   useSupplierDeliveries,
@@ -31,7 +31,7 @@ export function SuppliersPage() {
       await upsert.mutateAsync(editing)
       setEditing(null)
     } catch (error) {
-      alert(`Не удалось сохранить поставщика: ${error instanceof Error ? error.message : String(error)}`)
+      alert(`Не удалось сохранить поставщика: ${getErrorMessage(error)}`)
     }
   }
 

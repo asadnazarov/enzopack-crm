@@ -31,6 +31,16 @@ export function startOfMonthISO(): string {
   return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10)
 }
 
+/** Extracts a readable message from any thrown value, including Supabase's
+ * PostgrestError (a plain object with .message, not an Error instance). */
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message
+  if (error && typeof error === 'object' && 'message' in error && typeof (error as { message: unknown }).message === 'string') {
+    return (error as { message: string }).message
+  }
+  return String(error)
+}
+
 /** Preview of the 3-digit code the DB trigger will assign to the next new product. */
 export function nextProductCodePreview(products: { code: string }[]): string {
   const max = products.reduce((acc, p) => {

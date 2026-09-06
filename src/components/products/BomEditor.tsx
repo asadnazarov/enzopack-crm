@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { getErrorMessage } from '../../lib/formatters'
 import type { RawMaterial } from '../../types/db'
 
 export interface BomLine {
@@ -45,7 +46,7 @@ export function BomEditor({ lines, onChange, materials, onCreateMaterial }: BomE
       onChange([...lines, { raw_material_id: id, qty_per_unit: 1 }])
       setCreating(null)
     } catch (error) {
-      alert(`Не удалось создать сырьё: ${error instanceof Error ? error.message : String(error)}`)
+      alert(`Не удалось создать сырьё: ${getErrorMessage(error)}`)
     } finally {
       setSaving(false)
     }

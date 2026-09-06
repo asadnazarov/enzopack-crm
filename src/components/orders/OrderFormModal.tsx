@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { EntityFormModal } from '../common/EntityFormModal'
 import { FormField } from '../common/FormField'
 import { supabase } from '../../lib/supabaseClient'
-import { nextProductCodePreview } from '../../lib/formatters'
+import { getErrorMessage, nextProductCodePreview } from '../../lib/formatters'
 import { useClients, useUpsertClient } from '../../hooks/useClients'
 import { useCreateOrder } from '../../hooks/useOrders'
 import { useProductBom, useUpsertProduct } from '../../hooks/useFinishedProducts'
@@ -107,7 +107,7 @@ export function OrderFormModal({ open, onClose }: OrderFormModalProps) {
         onClose()
       }
     } catch (error) {
-      alert(`Не удалось создать заказ: ${error instanceof Error ? error.message : String(error)}`)
+      alert(`Не удалось создать заказ: ${getErrorMessage(error)}`)
     }
   }
 

@@ -20,6 +20,22 @@ export function useOrders(status?: OrderStatus) {
   })
 }
 
+export function useClientOrders(clientId: string | undefined) {
+  return useQuery({
+    queryKey: [...KEY, 'by_client', clientId],
+    enabled: !!clientId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*, product:finished_products(id,code,name,photo_url)')
+        .eq('client_id', clientId)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data as Order[]
+    },
+  })
+}
+
 export function useCreateOrder() {
   const qc = useQueryClient()
   return useMutation({

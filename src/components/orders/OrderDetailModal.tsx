@@ -3,7 +3,7 @@ import { EntityFormModal } from '../common/EntityFormModal'
 import { FormField } from '../common/FormField'
 import { StatusBadge } from '../common/StatusBadge'
 import { publicMediaUrl } from '../../lib/supabaseClient'
-import { formatMoney, formatNumber } from '../../lib/formatters'
+import { formatMoney, formatNumber, getErrorMessage } from '../../lib/formatters'
 import { useClients } from '../../hooks/useClients'
 import { useUpdateOrderDetails, useUpdateOrderStatus } from '../../hooks/useOrders'
 import { ORDER_STATUS_FLOW } from '../../types/db'
@@ -49,7 +49,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
       })
       onClose()
     } catch (error) {
-      alert(`Не удалось сохранить изменения: ${error instanceof Error ? error.message : String(error)}`)
+      alert(`Не удалось сохранить изменения: ${getErrorMessage(error)}`)
     }
   }
 
@@ -58,7 +58,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
     try {
       await updateStatus.mutateAsync({ orderId: order.id, status: ORDER_STATUS_FLOW[nextIndex] })
     } catch (error) {
-      alert(`Не удалось изменить статус: ${error instanceof Error ? error.message : String(error)}`)
+      alert(`Не удалось изменить статус: ${getErrorMessage(error)}`)
     }
   }
 
@@ -69,7 +69,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
       await updateStatus.mutateAsync({ orderId: order.id, status: 'cancelled' })
       onClose()
     } catch (error) {
-      alert(`Не удалось отменить заказ: ${error instanceof Error ? error.message : String(error)}`)
+      alert(`Не удалось отменить заказ: ${getErrorMessage(error)}`)
     }
   }
 

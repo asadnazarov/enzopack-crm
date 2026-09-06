@@ -4,7 +4,7 @@ import { CardListWithPhoto } from '../components/common/CardListWithPhoto'
 import { EntityFormModal } from '../components/common/EntityFormModal'
 import { FormField } from '../components/common/FormField'
 import { PhotoUploader } from '../components/common/PhotoUploader'
-import { formatMoney, formatNumber, nextProductCodePreview } from '../lib/formatters'
+import { formatMoney, formatNumber, getErrorMessage, nextProductCodePreview } from '../lib/formatters'
 import {
   useDeleteProduct,
   useFinishedProducts,
@@ -54,7 +54,7 @@ export function FinishedProductsPage() {
       })
       setEditing(null)
     } catch (error) {
-      alert(`Не удалось сохранить продукт: ${error instanceof Error ? error.message : String(error)}`)
+      alert(`Не удалось сохранить продукт: ${getErrorMessage(error)}`)
     }
   }
 
