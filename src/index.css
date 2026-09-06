@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  /* EnzoPack brand palette, sampled from the official logo */
+  --color-brand-yellow: #ffb100;
+  --color-brand-yellow-dark: #e69e00;
+  --color-brand-yellow-light: #ffe4ad;
+  --color-brand-black: #0d0d0d;
+  --color-brand-ink: #1a1a1a;
+  --color-brand-white: #ffffff;
+  --color-brand-gray: #f5f4f1;
+  --color-brand-gray-dark: #6b6b6b;
+  --color-brand-border: #e6e4de;
+
+  --color-status-processing: #ffb100;
+  --color-status-in_progress: #3b82f6;
+  --color-status-ready: #8b5cf6;
+  --color-status-delivered: #16a34a;
+  --color-status-cancelled: #9ca3af;
+}
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-brand-gray);
+  color: var(--color-brand-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
