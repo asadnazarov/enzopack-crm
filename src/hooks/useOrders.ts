@@ -86,6 +86,8 @@ export function useUpdateOrderStatus() {
       qc.invalidateQueries({ queryKey: ['material_shortage'] })
       qc.invalidateQueries({ queryKey: ['dashboard_kpi'] })
       qc.invalidateQueries({ queryKey: ['production_trend'] })
+      qc.invalidateQueries({ queryKey: ['finance_transactions'] })
+      qc.invalidateQueries({ queryKey: ['cash_balance'] })
     },
   })
 }
