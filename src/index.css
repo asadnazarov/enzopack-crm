@@ -6,13 +6,13 @@
   /* EnzoPack brand palette, sampled from the official logo */
   --color-brand-yellow: #ffb100;
   --color-brand-yellow-dark: #e69e00;
-  --color-brand-yellow-light: #ffe4ad;
-  --color-brand-black: #0d0d0d;
-  --color-brand-ink: #1a1a1a;
+  --color-brand-yellow-light: #fff1d6;
+  --color-brand-black: #14120f;
+  --color-brand-ink: #1c1a17;
   --color-brand-white: #ffffff;
-  --color-brand-gray: #f5f4f1;
-  --color-brand-gray-dark: #6b6b6b;
-  --color-brand-border: #e6e4de;
+  --color-brand-gray: #f7f6f2;
+  --color-brand-gray-dark: #78756e;
+  --color-brand-border: #e9e6dd;
 
   --color-status-processing: #ffb100;
   --color-status-in_progress: #3b82f6;
@@ -42,4 +42,18 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+}
+
+::-webkit-scrollbar {
+  height: 6px;
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-brand-border);
+  border-radius: 4px;
+}
+
+h1 {
+  letter-spacing: -0.02em;
 }

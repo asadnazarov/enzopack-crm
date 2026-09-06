@@ -1,18 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
-
-const STORAGE_KEY = 'enzopack_intro_seen'
+import { useState } from 'react'
 
 export function IntroVideoOverlay() {
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const seen = localStorage.getItem(STORAGE_KEY)
-    if (!seen) setVisible(true)
-  }, [])
+  const [visible, setVisible] = useState(true)
 
   function dismiss() {
-    localStorage.setItem(STORAGE_KEY, '1')
     setVisible(false)
   }
 
@@ -20,14 +12,16 @@ export function IntroVideoOverlay() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
+          className="fixed inset-0 z-[100] bg-brand-black flex items-center justify-center"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
         >
           <video
             className="w-full h-full object-cover"
             src={`${import.meta.env.BASE_URL}intro-video.mp4`}
+            poster={`${import.meta.env.BASE_URL}intro-poster.jpg`}
+            preload="auto"
             autoPlay
             muted
             playsInline
