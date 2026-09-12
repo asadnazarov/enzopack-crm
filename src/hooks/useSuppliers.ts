@@ -56,11 +56,13 @@ export function useSupplierDeliveries(supplierId: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('supplier_deliveries')
-        .select('*, raw_material:raw_materials(id,name,unit)')
+        .select('*, raw_material:raw_materials(id,name,unit,code)')
         .eq('supplier_id', supplierId)
         .order('delivery_date', { ascending: false })
       if (error) throw error
-      return data as (SupplierDelivery & { raw_material: { id: string; name: string; unit: string } })[]
+      return data as (SupplierDelivery & {
+        raw_material: { id: string; name: string; unit: string; code: string }
+      })[]
     },
   })
 }

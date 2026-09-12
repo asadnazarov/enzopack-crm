@@ -36,6 +36,23 @@ export function useCashBalance() {
   })
 }
 
+export function useFinanceSummary(from: string, to: string) {
+  return useQuery({
+    queryKey: ['finance_summary', from, to],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('finance_transactions')
+        .select('type, amount')
+        .gte('transaction_date', from)
+        .lte('transaction_date', to)
+      if (error) throw error
+      const income = data.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
+      const expense = data.filter((t) => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+      return { income, expense, net: income - expense }
+    },
+  })
+}
+
 export type FinanceTransactionInput = Omit<FinanceTransaction, 'id' | 'created_at'>
 
 export function useCreateFinanceTransaction() {

@@ -3,6 +3,8 @@ import { DateRangeFilter, DEFAULT_DATE_RANGE, type DateRange } from '../componen
 import { KpiCard } from '../components/common/KpiCard'
 import { ProductionTrendChart } from '../components/dashboard/ProductionTrendChart'
 import { ShortageTopWidget } from '../components/dashboard/ShortageTopWidget'
+import { FinanceSummaryWidget } from '../components/dashboard/FinanceSummaryWidget'
+import { PayrollWidget } from '../components/dashboard/PayrollWidget'
 import { useDashboardKpi, useProductionTrend, useShortageTop } from '../hooks/useDashboard'
 import { formatNumber } from '../lib/formatters'
 
@@ -37,10 +39,16 @@ export function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         <ProductionTrendChart data={trend} />
         <ShortageTopWidget data={shortages} />
       </div>
+
+      <div className="mb-4">
+        <FinanceSummaryWidget from={range.from} to={range.to} />
+      </div>
+
+      <PayrollWidget />
     </div>
   )
 }

@@ -4,15 +4,17 @@ import { CardListWithPhoto } from '../components/common/CardListWithPhoto'
 import { EntityFormModal } from '../components/common/EntityFormModal'
 import { FormField } from '../components/common/FormField'
 import { PhotoUploader } from '../components/common/PhotoUploader'
-import { formatMoney, formatNumber, getErrorMessage, nextProductCodePreview } from '../lib/formatters'
+import { DateRangeFilter, DEFAULT_DATE_RANGE, type DateRange } from '../components/common/DateRangeFilter'
+import { formatDate, formatMoney, formatNumber, getErrorMessage, nextProductCodePreview } from '../lib/formatters'
 import {
   useDeleteProduct,
   useFinishedProducts,
   useProductBom,
   useUpsertProduct,
 } from '../hooks/useFinishedProducts'
+import { useFinishedGoodsMovements } from '../hooks/useFinishedGoodsMovements'
 import { useRawMaterials, useUpsertRawMaterial } from '../hooks/useRawMaterials'
-import type { FinishedProduct } from '../types/db'
+import { FINISHED_GOODS_MOVEMENT_LABELS, type FinishedProduct } from '../types/db'
 
 const EMPTY: Partial<FinishedProduct> = { name: '', photo_url: null, sale_price: 0, stock_qty: 0 }
 
@@ -26,6 +28,13 @@ export function FinishedProductsPage() {
   const [editing, setEditing] = useState<Partial<FinishedProduct> | null>(null)
   const [bom, setBom] = useState<BomLine[]>([])
   const { data: existingBom } = useProductBom(editing?.id)
+  const [showHistory, setShowHistory] = useState(false)
+  const [historyRange, setHistoryRange] = useState<DateRange>(DEFAULT_DATE_RANGE)
+  const { data: movements = [] } = useFinishedGoodsMovements(
+    showHistory ? editing?.id : undefined,
+    historyRange.from,
+    historyRange.to,
+  )
 
   useEffect(() => {
     if (existingBom) {
@@ -37,6 +46,7 @@ export function FinishedProductsPage() {
 
   function openEdit(id: string) {
     setEditing(products.find((p) => p.id === id) ?? EMPTY)
+    setShowHistory(false)
   }
 
   async function handleSave() {
@@ -168,6 +178,52 @@ export function FinishedProductsPage() {
               materials={materials}
               onCreateMaterial={(input) => upsertMaterial.mutateAsync(input) as Promise<string>}
             />
+
+            {editing.id && (
+              <div className="mt-2 border-t border-brand-border pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowHistory((v) => !v)}
+                  className="text-xs font-semibold text-brand-yellow-dark hover:underline"
+                >
+                  {showHistory ? 'Скрыть историю движений' : 'Показать историю движений'}
+                </button>
+
+                {showHistory && (
+                  <div className="mt-2 flex flex-col gap-2">
+                    <DateRangeFilter value={historyRange} onChange={setHistoryRange} />
+                    {movements.length === 0 ? (
+                      <div className="text-xs text-brand-gray-dark">За выбранный период движений не было</div>
+                    ) : (
+                      <div className="flex flex-col gap-1 max-h-48 overflow-y-auto">
+                        {movements.map((m) => (
+                          <div
+                            key={m.id}
+                            className="flex justify-between gap-2 text-xs bg-brand-gray rounded-lg px-3 py-2"
+                          >
+                            <span
+                              className={
+                                m.movement_type === 'produced'
+                                  ? 'text-green-700 font-medium'
+                                  : m.movement_type === 'shipped'
+                                    ? 'text-brand-gray-dark font-medium'
+                                    : 'text-brand-yellow-dark font-medium'
+                              }
+                            >
+                              {FINISHED_GOODS_MOVEMENT_LABELS[m.movement_type]}
+                            </span>
+                            <span className="whitespace-nowrap">{formatNumber(Number(m.qty))} шт</span>
+                            <span className="whitespace-nowrap text-brand-gray-dark">
+                              {formatDate(m.movement_date)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </EntityFormModal>
