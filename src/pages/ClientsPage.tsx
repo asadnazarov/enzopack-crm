@@ -6,6 +6,8 @@ import { PhotoUploader } from '../components/common/PhotoUploader'
 import { formatDate, formatMoney, formatNumber, getErrorMessage } from '../lib/formatters'
 import { useClients, useDeleteClient, useUpsertClient } from '../hooks/useClients'
 import { useClientOrders } from '../hooks/useOrders'
+import { useTechCardByOrder } from '../hooks/useTechCards'
+import { TechCardView } from '../components/techcards/TechCardView'
 import { ORDER_STATUS_LABELS } from '../types/db'
 import type { Client } from '../types/db'
 
@@ -17,6 +19,7 @@ export function ClientsPage() {
   const del = useDeleteClient()
   const [editing, setEditing] = useState<Partial<Client> | null>(null)
   const { data: orders = [] } = useClientOrders(editing?.id)
+  const [techCardOrderId, setTechCardOrderId] = useState<string | null>(null)
 
   function openEdit(id: string) {
     setEditing(clients.find((c) => c.id === id) ?? EMPTY)
@@ -143,6 +146,13 @@ export function ClientsPage() {
                         <span className="whitespace-nowrap text-brand-gray-dark">
                           {ORDER_STATUS_LABELS[o.status]}
                         </span>
+                        <button
+                          type="button"
+                          onClick={() => setTechCardOrderId(o.id)}
+                          className="whitespace-nowrap text-brand-yellow-dark font-semibold hover:underline"
+                        >
+                          Техкарта
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -152,6 +162,39 @@ export function ClientsPage() {
           </>
         )}
       </EntityFormModal>
+
+      {techCardOrderId && (
+        <ClientTechCardPeek orderId={techCardOrderId} onClose={() => setTechCardOrderId(null)} />
+      )}
+    </div>
+  )
+}
+
+function ClientTechCardPeek({ orderId, onClose }: { orderId: string; onClose: () => void }) {
+  const { data: techCard, isLoading } = useTechCardByOrder(orderId)
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
+      <div
+        className="bg-white rounded-2xl p-5 max-w-md w-full max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="text-sm font-semibold text-brand-ink mb-3">Техкарта заказа</div>
+        {isLoading ? (
+          <div className="text-sm text-brand-gray-dark">Загрузка…</div>
+        ) : techCard ? (
+          <TechCardView techCard={techCard} mode="client" />
+        ) : (
+          <div className="text-sm text-brand-gray-dark">Для этого заказа техкарта не найдена.</div>
+        )}
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-4 px-4 py-2 rounded-lg text-sm font-semibold bg-brand-yellow text-brand-black hover:brightness-95 transition"
+        >
+          Закрыть
+        </button>
+      </div>
     </div>
   )
 }

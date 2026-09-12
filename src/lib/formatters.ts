@@ -3,7 +3,7 @@ export function formatNumber(value: number): string {
 }
 
 export function formatMoney(value: number): string {
-  return `${new Intl.NumberFormat('ru-RU').format(value)} сум`
+  return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(value)} сум`
 }
 
 export function formatDate(value: string | null | undefined): string {

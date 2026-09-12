@@ -6,6 +6,8 @@ import { publicMediaUrl } from '../../lib/supabaseClient'
 import { formatMoney, formatNumber, getErrorMessage } from '../../lib/formatters'
 import { useClients } from '../../hooks/useClients'
 import { useUpdateOrderDetails, useUpdateOrderStatus } from '../../hooks/useOrders'
+import { useTechCardByOrder } from '../../hooks/useTechCards'
+import { TechCardView } from '../techcards/TechCardView'
 import { ORDER_STATUS_FLOW } from '../../types/db'
 import type { Order } from '../../types/db'
 
@@ -16,6 +18,7 @@ interface OrderDetailModalProps {
 
 export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
   const { data: clients = [] } = useClients()
+  const { data: techCard } = useTechCardByOrder(order?.id)
   const updateDetails = useUpdateOrderDetails()
   const updateStatus = useUpdateOrderStatus()
 
@@ -174,6 +177,13 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
               className="border border-brand-border rounded-lg px-3 py-2 text-sm outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow-light transition resize-none"
             />
           </label>
+
+          {techCard && (
+            <div className="border-t border-brand-border pt-3">
+              <div className="text-sm font-medium text-brand-ink mb-2">Техкарта</div>
+              <TechCardView techCard={techCard} mode="management" />
+            </div>
+          )}
         </>
       )}
     </EntityFormModal>
