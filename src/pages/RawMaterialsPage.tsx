@@ -19,6 +19,7 @@ const EMPTY: Partial<RawMaterial> = {
   supplier_id: null,
   unit_price: 0,
   stock_qty: 0,
+  grammage: null,
 }
 
 export function RawMaterialsPage() {
@@ -44,6 +45,7 @@ export function RawMaterialsPage() {
         supplier_id: editing.supplier_id ?? null,
         unit_price: Number(editing.unit_price ?? 0),
         stock_qty: Number(editing.stock_qty ?? 0),
+        grammage: editing.grammage === null || editing.grammage === undefined ? null : Number(editing.grammage),
       })
       setEditing(null)
     } catch (error) {
@@ -145,12 +147,22 @@ export function RawMaterialsPage() {
                 onChange={(e) => setEditing({ ...editing, stock_qty: Number(e.target.value) })}
               />
             </div>
-            <FormField
-              label="Цена за единицу"
-              type="number"
-              value={editing.unit_price ?? 0}
-              onChange={(e) => setEditing({ ...editing, unit_price: Number(e.target.value) })}
-            />
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                label="Цена за единицу"
+                type="number"
+                value={editing.unit_price ?? 0}
+                onChange={(e) => setEditing({ ...editing, unit_price: Number(e.target.value) })}
+              />
+              <FormField
+                label="Граммаж, г/м² (для бумаги)"
+                type="number"
+                value={editing.grammage ?? ''}
+                onChange={(e) =>
+                  setEditing({ ...editing, grammage: e.target.value === '' ? null : Number(e.target.value) })
+                }
+              />
+            </div>
             <label className="flex flex-col gap-1">
               <span className="text-sm font-medium text-brand-ink">Поставщик</span>
               <select

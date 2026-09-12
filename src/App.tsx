@@ -8,6 +8,8 @@ import { RawMaterialsPage } from './pages/RawMaterialsPage'
 import { FinishedProductsPage } from './pages/FinishedProductsPage'
 import { SuppliersPage } from './pages/SuppliersPage'
 import { FinancePage } from './pages/FinancePage'
+import { ProductionSettingsPage } from './pages/ProductionSettingsPage'
+import { DiesPage } from './pages/DiesPage'
 
 export default function App() {
   return (
@@ -22,6 +24,8 @@ export default function App() {
           <Route path="/products" element={<FinishedProductsPage />} />
           <Route path="/suppliers" element={<SuppliersPage />} />
           <Route path="/finance" element={<FinancePage />} />
+          <Route path="/dies" element={<DiesPage />} />
+          <Route path="/production-settings" element={<ProductionSettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AppLayout>

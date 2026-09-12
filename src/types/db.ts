@@ -51,6 +51,7 @@ export interface RawMaterial {
   supplier_id: string | null
   unit_price: number
   stock_qty: number
+  grammage: number | null
   created_at: string
   updated_at: string
   supplier?: Pick<Supplier, 'id' | 'name'> | null
@@ -137,4 +138,83 @@ export interface DashboardKpi {
   active_orders: number
   revenue: number
   shortage_materials_count: number
+}
+
+export type DieStatus = 'active' | 'in_repair' | 'retired'
+
+export const DIE_STATUS_LABELS: Record<DieStatus, string> = {
+  active: 'В работе',
+  in_repair: 'В ремонте',
+  retired: 'Списан',
+}
+
+export interface Die {
+  id: string
+  code: string
+  name: string
+  for_product_id: string | null
+  photo_url: string | null
+  purchase_date: string | null
+  status: DieStatus
+  notes: string | null
+  created_at: string
+  updated_at: string
+  for_product?: Pick<FinishedProduct, 'id' | 'code' | 'name'> | null
+}
+
+export interface TechCard {
+  id: string
+  order_id: string
+  client_id: string
+  product_id: string
+  die_id: string | null
+  input_snapshot: Record<string, unknown>
+  result_snapshot: Record<string, unknown>
+  settings_snapshot: Record<string, unknown>
+  total_cost: number
+  unit_cost: number
+  sale_price_vat: number
+  margin_pct: number | null
+  created_at: string
+  die?: Pick<Die, 'id' | 'code' | 'name'> | null
+}
+
+export type FinishedGoodsMovementType = 'produced' | 'shipped' | 'adjustment'
+
+export const FINISHED_GOODS_MOVEMENT_LABELS: Record<FinishedGoodsMovementType, string> = {
+  produced: 'Произведено',
+  shipped: 'Отгружено',
+  adjustment: 'Корректировка',
+}
+
+export interface FinishedGoodsMovement {
+  id: string
+  product_id: string
+  order_id: string | null
+  movement_type: FinishedGoodsMovementType
+  qty: number
+  movement_date: string
+  notes: string | null
+  created_at: string
+}
+
+export interface Employee {
+  id: string
+  full_name: string
+  monthly_salary: number
+  monthly_norm_hours: number
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface EmployeeHours {
+  id: string
+  employee_id: string
+  month: string
+  hours_worked: number
+  salary_snapshot: number
+  norm_hours_snapshot: number
+  notes: string | null
+  created_at: string
 }
