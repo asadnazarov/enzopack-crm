@@ -1,6 +1,7 @@
 export type CalculatorBasis = 'sheet' | 'box'
 export type BoxConstruction = '0201' | 'tray'
-export type BoardType = 'produce' | 'ready'
+// '3'/'5' = number of layers to slice from the picked layer list, 'ready' = bought board (single layer, no corrugator step)
+export type BoardType = '3' | '5' | 'ready'
 export type GlueLineType = 'starch' | 'liquid' | 'none'
 export type PrintType = 'none' | 'flexo' | 'offset' | 'service'
 export type PricingMode = 'margin' | 'manual'
