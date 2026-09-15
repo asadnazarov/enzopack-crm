@@ -5,7 +5,13 @@ import { EntityFormModal } from '../components/common/EntityFormModal'
 import { FormField } from '../components/common/FormField'
 import { PhotoUploader } from '../components/common/PhotoUploader'
 import { DateRangeFilter, DEFAULT_DATE_RANGE, type DateRange } from '../components/common/DateRangeFilter'
-import { formatDate, formatMoney, formatNumber, getErrorMessage, nextProductCodePreview } from '../lib/formatters'
+import {
+  formatDateTimeTashkent,
+  formatMoney,
+  formatNumber,
+  getErrorMessage,
+  nextProductCodePreview,
+} from '../lib/formatters'
 import {
   useDeleteProduct,
   useFinishedProducts,
@@ -181,7 +187,7 @@ export function FinishedProductsPage() {
                     {FINISHED_GOODS_MOVEMENT_LABELS[m.movement_type]}
                   </span>
                   <span className="whitespace-nowrap">{formatNumber(Number(m.qty))} шт</span>
-                  <span className="whitespace-nowrap text-brand-gray-dark">{formatDate(m.movement_date)}</span>
+                  <span className="whitespace-nowrap text-brand-gray-dark">{formatDateTimeTashkent(m.movement_date)}</span>
                 </div>
               ))}
             </div>
@@ -296,7 +302,7 @@ export function FinishedProductsPage() {
                             </span>
                             <span className="whitespace-nowrap">{formatNumber(Number(m.qty))} шт</span>
                             <span className="whitespace-nowrap text-brand-gray-dark">
-                              {formatDate(m.movement_date)}
+                              {formatDateTimeTashkent(m.movement_date)}
                             </span>
                           </div>
                         ))}

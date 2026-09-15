@@ -16,6 +16,19 @@ export function formatDate(value: string | null | undefined): string {
   }).format(date)
 }
 
+export function formatDateTimeTashkent(value: string | null | undefined): string {
+  if (!value) return '—'
+  const date = new Date(value)
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Tashkent',
+  }).format(date)
+}
+
 export function todayISO(): string {
   return new Date().toISOString().slice(0, 10)
 }
