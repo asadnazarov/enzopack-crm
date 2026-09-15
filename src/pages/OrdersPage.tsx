@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CalculatorOrderModal } from '../components/orders/CalculatorOrderModal'
+import { OrderFormModal } from '../components/orders/OrderFormModal'
 import { OrderDetailModal } from '../components/orders/OrderDetailModal'
 import { OrdersList } from '../components/orders/OrdersList'
 import { useOrders, useUpdateOrderStatus } from '../hooks/useOrders'
@@ -48,7 +48,7 @@ export function OrdersPage() {
         />
       )}
 
-      <CalculatorOrderModal open={formOpen} onClose={() => setFormOpen(false)} />
+      <OrderFormModal open={formOpen} onClose={() => setFormOpen(false)} />
       <OrderDetailModal order={openOrder} onClose={() => setOpenOrderId(null)} />
     </div>
   )

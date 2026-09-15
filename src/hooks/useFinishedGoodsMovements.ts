@@ -20,3 +20,20 @@ export function useFinishedGoodsMovements(productId?: string, from?: string, to?
     },
   })
 }
+
+export function useAllFinishedGoodsMovements(from?: string, to?: string) {
+  return useQuery({
+    queryKey: ['finished_goods_movements', 'all', from, to],
+    queryFn: async () => {
+      let query = supabase
+        .from('finished_goods_movements')
+        .select('*, product:finished_products(id,code,name)')
+        .order('movement_date', { ascending: false })
+      if (from) query = query.gte('movement_date', from)
+      if (to) query = query.lte('movement_date', to)
+      const { data, error } = await query
+      if (error) throw error
+      return data as (FinishedGoodsMovement & { product: { id: string; code: string; name: string } | null })[]
+    },
+  })
+}

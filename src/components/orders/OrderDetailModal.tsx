@@ -6,6 +6,7 @@ import { publicMediaUrl } from '../../lib/supabaseClient'
 import { formatMoney, formatNumber, getErrorMessage } from '../../lib/formatters'
 import { useClients } from '../../hooks/useClients'
 import { useUpdateOrderDetails, useUpdateOrderStatus } from '../../hooks/useOrders'
+import { useProductBom } from '../../hooks/useFinishedProducts'
 import { useTechCardByOrder } from '../../hooks/useTechCards'
 import { TechCardView } from '../techcards/TechCardView'
 import { ORDER_STATUS_FLOW } from '../../types/db'
@@ -18,6 +19,7 @@ interface OrderDetailModalProps {
 
 export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
   const { data: clients = [] } = useClients()
+  const { data: bom = [] } = useProductBom(order?.product_id)
   const { data: techCard } = useTechCardByOrder(order?.id)
   const updateDetails = useUpdateOrderDetails()
   const updateStatus = useUpdateOrderStatus()
@@ -77,6 +79,7 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
   }
 
   const photo = publicMediaUrl(order?.product?.photo_url)
+  const selectedClient = clients.find((c) => c.id === clientId)
 
   return (
     <EntityFormModal
@@ -127,7 +130,11 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
                 #{order.product?.code} {order.product?.name}
               </div>
               <div className="text-xs text-brand-gray-dark">
-                {formatNumber(Number(order.quantity))} шт · {formatMoney(Number(order.total_amount))}
+                {formatNumber(Number(order.quantity))} шт · {formatMoney(Number(order.total_amount))} ·{' '}
+                {formatMoney(Number(order.unit_price))}/шт
+              </div>
+              <div className="text-xs text-brand-gray-dark mt-0.5">
+                Создан: {new Date(order.created_at).toLocaleString('ru-RU')}
               </div>
             </div>
             <StatusBadge status={order.status} onAdvance={canAdvance ? handleAdvance : undefined} />
@@ -151,7 +158,31 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
                 </option>
               ))}
             </select>
+            {selectedClient && (selectedClient.company || selectedClient.phone) && (
+              <span className="text-xs text-brand-gray-dark">
+                {[selectedClient.company, selectedClient.phone].filter(Boolean).join(' · ')}
+              </span>
+            )}
           </label>
+
+          {bom.length > 0 && (
+            <div className="border border-brand-border rounded-xl p-3">
+              <div className="text-sm font-medium text-brand-ink mb-2">Состав продукта (на 1 шт)</div>
+              <div className="flex flex-col gap-1">
+                {bom.map((row) => (
+                  <div key={row.id} className="flex items-center justify-between text-xs">
+                    <span className="text-brand-ink">
+                      #{row.raw_material?.code} {row.raw_material?.name}
+                    </span>
+                    <span className="text-brand-gray-dark">
+                      {formatNumber(Number(row.qty_per_unit))} {row.raw_material?.unit} × {formatNumber(Number(order.quantity))} ={' '}
+                      {formatNumber(Number(row.qty_per_unit) * Number(order.quantity))} {row.raw_material?.unit}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <FormField

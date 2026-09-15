@@ -12,13 +12,14 @@ import {
   useProductBom,
   useUpsertProduct,
 } from '../hooks/useFinishedProducts'
-import { useFinishedGoodsMovements } from '../hooks/useFinishedGoodsMovements'
+import { useAllFinishedGoodsMovements, useFinishedGoodsMovements } from '../hooks/useFinishedGoodsMovements'
 import { useRawMaterials, useUpsertRawMaterial } from '../hooks/useRawMaterials'
 import { FINISHED_GOODS_MOVEMENT_LABELS, type FinishedProduct } from '../types/db'
 
 const EMPTY: Partial<FinishedProduct> = { name: '', photo_url: null, sale_price: 0, stock_qty: 0 }
 
 export function FinishedProductsPage() {
+  const [tab, setTab] = useState<'stock' | 'history'>('stock')
   const [search, setSearch] = useState('')
   const { data: products = [], isLoading } = useFinishedProducts(search)
   const { data: materials = [] } = useRawMaterials()
@@ -34,6 +35,12 @@ export function FinishedProductsPage() {
     showHistory ? editing?.id : undefined,
     historyRange.from,
     historyRange.to,
+  )
+
+  const [archiveRange, setArchiveRange] = useState<DateRange>(DEFAULT_DATE_RANGE)
+  const { data: allMovements = [], isLoading: archiveLoading } = useAllFinishedGoodsMovements(
+    archiveRange.from,
+    archiveRange.to,
   )
 
   useEffect(() => {
@@ -77,34 +84,96 @@ export function FinishedProductsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <h1 className="text-2xl font-bold text-brand-ink">Склад готовой продукции</h1>
-        <input
-          type="text"
-          placeholder="Поиск по коду или названию…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border border-brand-border rounded-full px-4 py-2 text-sm w-64 outline-none focus:border-brand-yellow"
-        />
+        {tab === 'stock' && (
+          <input
+            type="text"
+            placeholder="Поиск по коду или названию…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="border border-brand-border rounded-full px-4 py-2 text-sm w-64 outline-none focus:border-brand-yellow"
+          />
+        )}
       </div>
 
-      {isLoading ? (
-        <div className="text-brand-gray-dark">Загрузка…</div>
+      <div className="flex gap-1 mb-6 border-b border-brand-border">
+        <button
+          type="button"
+          onClick={() => setTab('stock')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition ${
+            tab === 'stock' ? 'border-brand-yellow text-brand-ink' : 'border-transparent text-brand-gray-dark'
+          }`}
+        >
+          На складе сейчас
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('history')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition ${
+            tab === 'history' ? 'border-brand-yellow text-brand-ink' : 'border-transparent text-brand-gray-dark'
+          }`}
+        >
+          История склада
+        </button>
+      </div>
+
+      {tab === 'stock' ? (
+        isLoading ? (
+          <div className="text-brand-gray-dark">Загрузка…</div>
+        ) : (
+          <CardListWithPhoto
+            items={products.map((p) => ({
+              id: p.id,
+              photo_url: p.photo_url,
+              title: p.name,
+              badge: `#${p.code}`,
+              subtitle: formatMoney(Number(p.sale_price)),
+              meta: `На складе: ${formatNumber(Number(p.stock_qty))} шт · себестоимость ${formatMoney(Number(p.cost_price))}`,
+            }))}
+            onItemClick={openEdit}
+            onAdd={() => setEditing(EMPTY)}
+            emptyLabel="Продуктов пока нет"
+            addLabel="Продукт"
+          />
+        )
       ) : (
-        <CardListWithPhoto
-          items={products.map((p) => ({
-            id: p.id,
-            photo_url: p.photo_url,
-            title: p.name,
-            badge: `#${p.code}`,
-            subtitle: formatMoney(Number(p.sale_price)),
-            meta: `На складе: ${formatNumber(Number(p.stock_qty))} шт · себестоимость ${formatMoney(Number(p.cost_price))}`,
-          }))}
-          onItemClick={openEdit}
-          onAdd={() => setEditing(EMPTY)}
-          emptyLabel="Продуктов пока нет"
-          addLabel="Продукт"
-        />
+        <div>
+          <div className="mb-4">
+            <DateRangeFilter value={archiveRange} onChange={setArchiveRange} />
+          </div>
+          {archiveLoading ? (
+            <div className="text-brand-gray-dark">Загрузка…</div>
+          ) : allMovements.length === 0 ? (
+            <div className="text-brand-gray-dark text-sm">За выбранный период движений не было</div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {allMovements.map((m) => (
+                <div
+                  key={m.id}
+                  className="flex items-center justify-between gap-3 text-sm bg-white border border-brand-border rounded-xl px-4 py-2.5"
+                >
+                  <span className="text-brand-ink font-medium">
+                    #{m.product?.code} {m.product?.name}
+                  </span>
+                  <span
+                    className={
+                      m.movement_type === 'produced'
+                        ? 'text-green-700 font-medium'
+                        : m.movement_type === 'shipped'
+                          ? 'text-brand-gray-dark font-medium'
+                          : 'text-brand-yellow-dark font-medium'
+                    }
+                  >
+                    {FINISHED_GOODS_MOVEMENT_LABELS[m.movement_type]}
+                  </span>
+                  <span className="whitespace-nowrap">{formatNumber(Number(m.qty))} шт</span>
+                  <span className="whitespace-nowrap text-brand-gray-dark">{formatDate(m.movement_date)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       <EntityFormModal
