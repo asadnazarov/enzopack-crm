@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import logoMark from '../../assets/logo/logo-mark.png'
+
+const WIDE_PATHS = ['/orders/new']
 
 const NAV_ITEMS = [
   { to: '/', label: 'Дашборд', end: true },
@@ -14,6 +16,9 @@ const NAV_ITEMS = [
 ]
 
 export function AppLayout({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation()
+  const isWide = WIDE_PATHS.includes(pathname)
+
   return (
     <div className="min-h-screen flex flex-col bg-brand-gray">
       <header className="sticky top-0 z-30 bg-brand-black text-white">
@@ -40,7 +45,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="flex-1 p-4 md:p-8 max-w-6xl w-full mx-auto">{children}</main>
+      <main className={`flex-1 p-4 md:p-8 w-full mx-auto ${isWide ? 'max-w-[1600px]' : 'max-w-6xl'}`}>{children}</main>
     </div>
   )
 }

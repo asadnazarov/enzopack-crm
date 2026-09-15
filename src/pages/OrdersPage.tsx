@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { OrderFormModal } from '../components/orders/OrderFormModal'
+import { useNavigate } from 'react-router-dom'
 import { OrderDetailModal } from '../components/orders/OrderDetailModal'
 import { OrdersList } from '../components/orders/OrdersList'
 import { useOrders, useUpdateOrderStatus } from '../hooks/useOrders'
@@ -7,9 +7,9 @@ import { ORDER_STATUS_FLOW } from '../types/db'
 import type { Order } from '../types/db'
 
 export function OrdersPage() {
+  const navigate = useNavigate()
   const { data: orders = [], isLoading } = useOrders()
   const updateStatus = useUpdateOrderStatus()
-  const [formOpen, setFormOpen] = useState(false)
   const [openOrderId, setOpenOrderId] = useState<string | null>(null)
   const openOrder = orders.find((o) => o.id === openOrderId) ?? null
 
@@ -30,7 +30,7 @@ export function OrdersPage() {
         <h1 className="text-2xl font-bold text-brand-ink">Заказы</h1>
         <button
           type="button"
-          onClick={() => setFormOpen(true)}
+          onClick={() => navigate('/orders/new')}
           className="flex items-center gap-2 bg-brand-yellow text-brand-black font-semibold px-4 py-2 rounded-full shadow-sm hover:brightness-95 active:scale-95 transition"
         >
           <span className="text-lg leading-none">+</span> Заказ
@@ -48,7 +48,6 @@ export function OrdersPage() {
         />
       )}
 
-      <OrderFormModal open={formOpen} onClose={() => setFormOpen(false)} />
       <OrderDetailModal order={openOrder} onClose={() => setOpenOrderId(null)} />
     </div>
   )

@@ -77,6 +77,16 @@ export interface ProductBomRow {
   raw_material?: Pick<RawMaterial, 'id' | 'code' | 'name' | 'unit' | 'stock_qty'>
 }
 
+export interface OrderMaterialConsumption {
+  id: string
+  order_id: string
+  raw_material_id: string
+  qty_consumed: number
+  applied: boolean
+  created_at: string
+  raw_material?: Pick<RawMaterial, 'id' | 'code' | 'name' | 'unit' | 'stock_qty'>
+}
+
 export interface Order {
   id: string
   client_id: string

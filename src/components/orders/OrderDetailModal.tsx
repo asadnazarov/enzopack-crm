@@ -5,7 +5,7 @@ import { StatusBadge } from '../common/StatusBadge'
 import { publicMediaUrl } from '../../lib/supabaseClient'
 import { formatMoney, formatNumber, getErrorMessage } from '../../lib/formatters'
 import { useClients } from '../../hooks/useClients'
-import { useUpdateOrderDetails, useUpdateOrderStatus } from '../../hooks/useOrders'
+import { useOrderMaterialConsumption, useUpdateOrderDetails, useUpdateOrderStatus } from '../../hooks/useOrders'
 import { useProductBom } from '../../hooks/useFinishedProducts'
 import { useTechCardByOrder } from '../../hooks/useTechCards'
 import { TechCardView } from '../techcards/TechCardView'
@@ -20,6 +20,7 @@ interface OrderDetailModalProps {
 export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
   const { data: clients = [] } = useClients()
   const { data: bom = [] } = useProductBom(order?.product_id)
+  const { data: consumption = [] } = useOrderMaterialConsumption(order?.id)
   const { data: techCard } = useTechCardByOrder(order?.id)
   const updateDetails = useUpdateOrderDetails()
   const updateStatus = useUpdateOrderStatus()
@@ -177,6 +178,29 @@ export function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
                     <span className="text-brand-gray-dark">
                       {formatNumber(Number(row.qty_per_unit))} {row.raw_material?.unit} × {formatNumber(Number(order.quantity))} ={' '}
                       {formatNumber(Number(row.qty_per_unit) * Number(order.quantity))} {row.raw_material?.unit}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {consumption.length > 0 && (
+            <div className="border border-brand-border rounded-xl p-3">
+              <div className="text-sm font-medium text-brand-ink mb-2">Расход сырья на этот заказ (из расчёта)</div>
+              <div className="flex flex-col gap-1">
+                {consumption.map((row) => (
+                  <div key={row.id} className="flex items-center justify-between text-xs gap-2">
+                    <span className="text-brand-ink">
+                      #{row.raw_material?.code} {row.raw_material?.name}
+                    </span>
+                    <span className="flex items-center gap-2 text-brand-gray-dark whitespace-nowrap">
+                      {formatNumber(Number(row.qty_consumed))} {row.raw_material?.unit}
+                      {row.applied ? (
+                        <span className="text-green-700 font-medium">списано</span>
+                      ) : (
+                        <span className="text-brand-yellow-dark font-medium">спишется при переходе «В работе»</span>
+                      )}
                     </span>
                   </div>
                 ))}

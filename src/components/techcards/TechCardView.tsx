@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { formatDate, formatMoney, formatNumber } from '../../lib/formatters'
-import type { QuoteResult } from '../../lib/calculator'
+import type { CalculatorConfig, QuoteResult } from '../../lib/calculator'
 import type { TechCard } from '../../types/db'
 
 interface TechCardViewProps {
@@ -8,8 +8,32 @@ interface TechCardViewProps {
   mode: 'management' | 'client'
 }
 
+const BOARD_TYPE_LABELS: Record<string, string> = {
+  '3': '3-слойный гофрокартон',
+  '5': '5-слойный гофрокартон',
+  ready: 'Покупной картон',
+}
+
+const PRINT_TYPE_LABELS: Record<string, string> = {
+  none: 'Без печати',
+  flexo: 'Флексопечать',
+  offset: 'Офсетная печать',
+  service: 'Услуга печати',
+}
+
+const GLUE_LINE_LABELS: Record<string, string> = {
+  starch: 'крахмальный',
+  liquid: 'жидкое стекло',
+  none: 'не считался',
+}
+
 export function TechCardView({ techCard, mode }: TechCardViewProps) {
   const result = techCard.result_snapshot as unknown as QuoteResult
+  const input = techCard.input_snapshot as unknown as CalculatorConfig | undefined
+  const glueLineSummary = input?.glueLines
+    ?.filter((line) => line.type !== 'none')
+    .map((line, index) => `${line.name ?? `слой ${index + 1}`}: ${GLUE_LINE_LABELS[line.type]}`)
+    .join(', ')
 
   return (
     <div className="flex flex-col gap-3 text-sm">
@@ -23,10 +47,14 @@ export function TechCardView({ techCard, mode }: TechCardViewProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
+        <Info label="Расчёт формата" value={result.basis === 'box' ? 'По коробке' : 'По листу'} />
         <Info label="Формат" value={`${formatNumber(result.blank.w)} × ${formatNumber(result.blank.h)} мм`} />
         <Info label="Площадь коробки" value={`${result.areaPerBox.toFixed(3)} м²`} />
         <Info label="Тираж" value={`${formatNumber(result.quantity)} шт.`} />
-        <Info label="Слоёв картона" value={`${result.materialDetails.length}`} />
+        <Info label="Картон" value={input ? (BOARD_TYPE_LABELS[input.boardType] ?? input.boardType) : `${result.materialDetails.length} слоёв`} />
+        <Info label="Отход материала" value={input ? `${input.waste}%` : '—'} />
+        <Info label="Печать" value={input ? `${PRINT_TYPE_LABELS[input.printType]}${input.printType !== 'none' ? `, ${input.colors} цв.` : ''}` : '—'} />
+        <Info label="Межслойный клей" value={glueLineSummary || 'не использовался'} />
       </div>
 
       {mode === 'management' && (

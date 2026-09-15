@@ -3,6 +3,7 @@ import { AppLayout } from './components/layout/AppLayout'
 import { IntroVideoOverlay } from './components/intro/IntroVideoOverlay'
 import { DashboardPage } from './pages/DashboardPage'
 import { OrdersPage } from './pages/OrdersPage'
+import { OrderCalculatorPage } from './pages/OrderCalculatorPage'
 import { ClientsPage } from './pages/ClientsPage'
 import { RawMaterialsPage } from './pages/RawMaterialsPage'
 import { FinishedProductsPage } from './pages/FinishedProductsPage'
@@ -18,6 +19,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/orders/new" element={<OrderCalculatorPage />} />
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/materials" element={<RawMaterialsPage />} />
           <Route path="/products" element={<FinishedProductsPage />} />
