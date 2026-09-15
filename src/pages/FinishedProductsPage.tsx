@@ -21,7 +21,9 @@ const EMPTY: Partial<FinishedProduct> = { name: '', photo_url: null, sale_price:
 export function FinishedProductsPage() {
   const [tab, setTab] = useState<'stock' | 'history'>('stock')
   const [search, setSearch] = useState('')
+  const [showZeroStock, setShowZeroStock] = useState(false)
   const { data: products = [], isLoading } = useFinishedProducts(search)
+  const visibleProducts = showZeroStock ? products : products.filter((p) => Number(p.stock_qty) > 0)
   const { data: materials = [] } = useRawMaterials()
   const upsertMaterial = useUpsertRawMaterial()
   const upsert = useUpsertProduct()
@@ -122,20 +124,31 @@ export function FinishedProductsPage() {
         isLoading ? (
           <div className="text-brand-gray-dark">Загрузка…</div>
         ) : (
-          <CardListWithPhoto
-            items={products.map((p) => ({
-              id: p.id,
-              photo_url: p.photo_url,
-              title: p.name,
-              badge: `#${p.code}`,
-              subtitle: formatMoney(Number(p.sale_price)),
-              meta: `На складе: ${formatNumber(Number(p.stock_qty))} шт · себестоимость ${formatMoney(Number(p.cost_price))}`,
-            }))}
-            onItemClick={openEdit}
-            onAdd={() => setEditing(EMPTY)}
-            emptyLabel="Продуктов пока нет"
-            addLabel="Продукт"
-          />
+          <>
+            <label className="flex items-center gap-2 mb-3 text-xs text-brand-gray-dark cursor-pointer w-fit">
+              <input
+                type="checkbox"
+                checked={showZeroStock}
+                onChange={(e) => setShowZeroStock(e.target.checked)}
+                className="accent-brand-yellow"
+              />
+              Показать товары без остатка на складе
+            </label>
+            <CardListWithPhoto
+              items={visibleProducts.map((p) => ({
+                id: p.id,
+                photo_url: p.photo_url,
+                title: p.name,
+                badge: `#${p.code}`,
+                subtitle: formatMoney(Number(p.sale_price)),
+                meta: `На складе: ${formatNumber(Number(p.stock_qty))} шт · себестоимость ${formatMoney(Number(p.cost_price))}`,
+              }))}
+              onItemClick={openEdit}
+              onAdd={() => setEditing(EMPTY)}
+              emptyLabel={showZeroStock ? 'Продуктов пока нет' : 'На складе сейчас ничего нет'}
+              addLabel="Продукт"
+            />
+          </>
         )
       ) : (
         <div>
