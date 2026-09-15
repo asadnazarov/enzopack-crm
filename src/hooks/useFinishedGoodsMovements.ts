@@ -6,8 +6,8 @@ import type { FinishedGoodsMovement } from '../types/db'
 // days — so the "to" bound needs to reach the end of that day, not its
 // midnight start, or same-day events later than 00:00 would be excluded.
 function endOfDayExclusive(to: string): string {
-  const d = new Date(`${to}T00:00:00`)
-  d.setDate(d.getDate() + 1)
+  const d = new Date(`${to}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + 1)
   return d.toISOString().slice(0, 10)
 }
 
