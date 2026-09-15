@@ -14,7 +14,7 @@ export function IntroOverlay() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="fixed inset-0 z-[100] bg-brand-black flex flex-col items-center justify-center gap-6 px-6"
+          className="fixed inset-0 z-[100] bg-brand-black overflow-hidden"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
@@ -22,12 +22,13 @@ export function IntroOverlay() {
           <img
             src={`${import.meta.env.BASE_URL}intro-splash.jpg`}
             alt="EnzoPack"
-            className="max-w-[min(640px,90vw)] w-full h-auto rounded-2xl shadow-2xl object-contain"
+            className="absolute inset-0 w-full h-full object-cover"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
 
-          <div className="w-full max-w-xs flex flex-col items-center gap-2">
-            <span className="text-[11px] uppercase tracking-[0.2em] text-white/50">Загрузка</span>
-            <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+          <div className="absolute bottom-14 left-1/2 -translate-x-1/2 w-full max-w-xs flex flex-col items-center gap-2 px-6">
+            <span className="text-[11px] uppercase tracking-[0.2em] text-white/70">Загрузка</span>
+            <div className="w-full h-1.5 rounded-full bg-white/20 overflow-hidden backdrop-blur-sm">
               <motion.div
                 className="h-full rounded-full bg-brand-yellow"
                 initial={{ width: '0%' }}
