@@ -3,7 +3,7 @@ import { CardListWithPhoto } from '../components/common/CardListWithPhoto'
 import { EntityFormModal } from '../components/common/EntityFormModal'
 import { FormField } from '../components/common/FormField'
 import { PhotoUploader } from '../components/common/PhotoUploader'
-import { formatDate, formatMoney, formatNumber, getErrorMessage } from '../lib/formatters'
+import { formatDate, formatMoney, formatNumber, getDeleteErrorMessage, getErrorMessage } from '../lib/formatters'
 import { useClients, useDeleteClient, useUpsertClient } from '../hooks/useClients'
 import { useClientOrders } from '../hooks/useOrders'
 import { useTechCardByOrder } from '../hooks/useTechCards'
@@ -38,8 +38,12 @@ export function ClientsPage() {
   async function handleDelete() {
     if (!editing?.id) return
     if (!confirm('Удалить клиента?')) return
-    await del.mutateAsync(editing.id)
-    setEditing(null)
+    try {
+      await del.mutateAsync(editing.id)
+      setEditing(null)
+    } catch (error) {
+      alert(`Не удалось удалить клиента: ${getDeleteErrorMessage(error)}`)
+    }
   }
 
   return (

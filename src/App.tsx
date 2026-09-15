@@ -1,6 +1,6 @@
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/layout/AppLayout'
-import { IntroVideoOverlay } from './components/intro/IntroVideoOverlay'
+import { IntroOverlay } from './components/intro/IntroOverlay'
 import { DashboardPage } from './pages/DashboardPage'
 import { OrdersPage } from './pages/OrdersPage'
 import { OrderCalculatorPage } from './pages/OrderCalculatorPage'
@@ -14,7 +14,7 @@ import { ProductionSettingsPage } from './pages/ProductionSettingsPage'
 export default function App() {
   return (
     <HashRouter>
-      <IntroVideoOverlay />
+      <IntroOverlay />
       <AppLayout>
         <Routes>
           <Route path="/" element={<DashboardPage />} />

@@ -54,6 +54,20 @@ export function getErrorMessage(error: unknown): string {
   return String(error)
 }
 
+/**
+ * Postgres error code 23503 = foreign_key_violation. Several tables use
+ * `on delete restrict` on purpose (orders/deliveries/BOM must not silently
+ * lose their material/product/client) — this turns that into a message a
+ * user can act on instead of a raw constraint name.
+ */
+export function getDeleteErrorMessage(error: unknown): string {
+  const code = error && typeof error === 'object' && 'code' in error ? (error as { code: unknown }).code : undefined
+  if (code === '23503') {
+    return 'Нельзя удалить — запись уже используется в других данных (заказах, рецептах товаров, поставках и т.п.). Сначала уберите эти связи, потом удаление станет доступно.'
+  }
+  return getErrorMessage(error)
+}
+
 /** Preview of the 3-digit code the DB trigger will assign to the next new product. */
 export function nextProductCodePreview(products: { code: string }[]): string {
   const max = products.reduce((acc, p) => {

@@ -3,7 +3,7 @@ import { CardListWithPhoto } from '../components/common/CardListWithPhoto'
 import { EntityFormModal } from '../components/common/EntityFormModal'
 import { FormField } from '../components/common/FormField'
 import { PhotoUploader } from '../components/common/PhotoUploader'
-import { formatNumber, getErrorMessage } from '../lib/formatters'
+import { formatNumber, getDeleteErrorMessage, getErrorMessage } from '../lib/formatters'
 import {
   useDeleteRawMaterial,
   useRawMaterials,
@@ -56,8 +56,12 @@ export function RawMaterialsPage() {
   async function handleDelete() {
     if (!editing?.id) return
     if (!confirm('Удалить материал?')) return
-    await del.mutateAsync(editing.id)
-    setEditing(null)
+    try {
+      await del.mutateAsync(editing.id)
+      setEditing(null)
+    } catch (error) {
+      alert(`Не удалось удалить материал: ${getDeleteErrorMessage(error)}`)
+    }
   }
 
   return (

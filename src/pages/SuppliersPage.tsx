@@ -3,7 +3,7 @@ import { CardListWithPhoto } from '../components/common/CardListWithPhoto'
 import { EntityFormModal } from '../components/common/EntityFormModal'
 import { FormField } from '../components/common/FormField'
 import { PhotoUploader } from '../components/common/PhotoUploader'
-import { formatDate, formatMoney, formatNumber, getErrorMessage } from '../lib/formatters'
+import { formatDate, formatMoney, formatNumber, getDeleteErrorMessage, getErrorMessage } from '../lib/formatters'
 import {
   useCreateDelivery,
   useDeleteSupplier,
@@ -51,8 +51,12 @@ export function SuppliersPage() {
   async function handleDelete() {
     if (!editing?.id) return
     if (!confirm('Удалить поставщика?')) return
-    await del.mutateAsync(editing.id)
-    setEditing(null)
+    try {
+      await del.mutateAsync(editing.id)
+      setEditing(null)
+    } catch (error) {
+      alert(`Не удалось удалить поставщика: ${getDeleteErrorMessage(error)}`)
+    }
   }
 
   async function handleAddDelivery() {

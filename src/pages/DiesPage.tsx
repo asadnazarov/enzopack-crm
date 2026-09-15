@@ -3,7 +3,7 @@ import { CardListWithPhoto } from '../components/common/CardListWithPhoto'
 import { EntityFormModal } from '../components/common/EntityFormModal'
 import { FormField } from '../components/common/FormField'
 import { PhotoUploader } from '../components/common/PhotoUploader'
-import { getErrorMessage } from '../lib/formatters'
+import { getDeleteErrorMessage, getErrorMessage } from '../lib/formatters'
 import { useDeleteDie, useDies, useUpsertDie } from '../hooks/useDies'
 import { useFinishedProducts } from '../hooks/useFinishedProducts'
 import { DIE_STATUS_LABELS, type Die, type DieStatus } from '../types/db'
@@ -49,8 +49,12 @@ export function DiesPage() {
   async function handleDelete() {
     if (!editing?.id) return
     if (!confirm('Удалить нож?')) return
-    await del.mutateAsync(editing.id)
-    setEditing(null)
+    try {
+      await del.mutateAsync(editing.id)
+      setEditing(null)
+    } catch (error) {
+      alert(`Не удалось удалить нож: ${getDeleteErrorMessage(error)}`)
+    }
   }
 
   return (

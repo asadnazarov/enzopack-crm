@@ -9,6 +9,7 @@ import {
   formatDateTimeTashkent,
   formatMoney,
   formatNumber,
+  getDeleteErrorMessage,
   getErrorMessage,
   nextProductCodePreview,
 } from '../lib/formatters'
@@ -86,8 +87,12 @@ export function FinishedProductsPage() {
   async function handleDelete() {
     if (!editing?.id) return
     if (!confirm('Удалить продукт?')) return
-    await del.mutateAsync(editing.id)
-    setEditing(null)
+    try {
+      await del.mutateAsync(editing.id)
+      setEditing(null)
+    } catch (error) {
+      alert(`Не удалось удалить продукт: ${getDeleteErrorMessage(error)}`)
+    }
   }
 
   return (
