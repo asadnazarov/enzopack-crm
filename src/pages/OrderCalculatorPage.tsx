@@ -118,10 +118,50 @@ export function OrderCalculatorPage() {
   const [notes, setNotes] = useState('')
 
   const [saving, setSaving] = useState(false)
+  const [viewMode, setViewMode] = useState<'management' | 'sales'>('management')
 
   useEffect(() => {
     document.title = 'Новый заказ — расчёт · EnzoPack'
   }, [])
+
+  function resetForm() {
+    setBasis('sheet')
+    setSheetWidth(720)
+    setSheetHeight(600)
+    setBoxesPerSheet(2)
+    setLength(580)
+    setWidth(395)
+    setHeight(390)
+    setConstruction('0201')
+    setGlueFlap(40)
+    setQuantity(1000)
+    setWaste(0)
+    setBoardType('3')
+    setLayerPicks([
+      { raw_material_id: '', factor: 1 },
+      { raw_material_id: '', factor: 1.5 },
+      { raw_material_id: '', factor: 1 },
+      { raw_material_id: '', factor: 1.5 },
+      { raw_material_id: '', factor: 1 },
+    ])
+    setReadyMaterialId('')
+    setGlueLineTypes(['starch', 'starch', 'starch', 'starch'])
+    setPrintType('none')
+    setColors(0)
+    setPrintRate(0)
+    setPlateFee(0)
+    setActiveOperations(OPERATION_DEFAULTS)
+    setPricingMode('margin')
+    setMargin(15)
+    setManualPrice(0)
+    setVat(12)
+    setRounding(0.01)
+    setLogistics(0)
+    setDeliveryCost(0)
+    setLeadTime(10)
+    setDeliveryDate('')
+    setNotes('')
+  }
 
   const activeLayerCount = boardType === 'ready' ? 1 : Number(boardType)
   const glueLineCount = Math.max(0, activeLayerCount - 1)
@@ -289,9 +329,58 @@ export function OrderCalculatorPage() {
     }
   }
 
+  const selectedClientName = clients.find((c) => c.id === clientId)?.name ?? newClient?.name ?? 'Не указан'
+  const selectedProductName = isNewProduct ? newProductName : (products.find((p) => p.id === productId)?.name ?? '—')
+  const boardSummary = resolvedLayers
+    .map((layer) => `${layer.name} ${formatNumber(layer.grammage)} г/м²${layer.factor !== 1 ? ` ×${layer.factor}` : ''}`)
+    .join(' • ')
+  const printLabel =
+    printType === 'none'
+      ? 'Без печати'
+      : printType === 'flexo'
+        ? `Флексопечать, ${colors} цв.`
+        : printType === 'offset'
+          ? 'Офсетная печать'
+          : 'Услуга печати'
+
+  function copyOffer() {
+    if (!result) return
+    const text = [
+      'Коммерческое предложение Enzo Pack',
+      `Клиент: ${selectedClientName}`,
+      `Изделие: ${selectedProductName || 'Гофрокороб'}`,
+      `Формат: ${formatNumber(result.blank.w)} × ${formatNumber(result.blank.h)} мм`,
+      `Площадь 1 коробки: ${result.areaPerBox.toFixed(3)} м²`,
+      `Структура: ${boardSummary || '—'}`,
+      `Печать: ${printLabel}`,
+      `Тираж: ${formatNumber(result.quantity)} коробок`,
+      `Цена без НДС: ${formatMoney(result.saleNoVat)}/шт.`,
+      `Цена с НДС: ${formatMoney(result.saleVat)}/шт.`,
+      `Итого с НДС: ${formatMoney(result.totalVat)}`,
+      `Срок: ${leadTime} рабочих дней`,
+    ].join('\n')
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).catch(() => fallbackCopy(text))
+    } else {
+      fallbackCopy(text)
+    }
+  }
+
+  function fallbackCopy(text: string) {
+    const area = document.createElement('textarea')
+    area.value = text
+    area.style.position = 'fixed'
+    area.style.opacity = '0'
+    document.body.appendChild(area)
+    area.select()
+    document.execCommand('copy')
+    area.remove()
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="sticky top-14 z-20 -mx-4 md:-mx-8 px-4 md:px-8 py-3 bg-brand-gray/95 backdrop-blur border-b border-brand-border flex items-center justify-between">
+      <div className="sticky top-14 z-20 -mx-4 md:-mx-8 px-4 md:px-8 py-3 bg-brand-gray/95 backdrop-blur border-b border-brand-border flex items-center justify-between print:hidden">
         <div>
           <button
             type="button"
@@ -302,7 +391,37 @@ export function OrderCalculatorPage() {
           </button>
           <h1 className="text-xl font-bold text-brand-ink">Новый заказ — расчёт</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="flex gap-1 bg-brand-gray rounded-lg p-0.5">
+            <button
+              type="button"
+              onClick={() => setViewMode('management')}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${viewMode === 'management' ? 'bg-brand-black text-white' : 'text-brand-gray-dark'}`}
+            >
+              Управление
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('sales')}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${viewMode === 'sales' ? 'bg-brand-black text-white' : 'text-brand-gray-dark'}`}
+            >
+              Продажи
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={resetForm}
+            className="px-3 py-2 rounded-lg text-sm font-medium text-brand-gray-dark border border-brand-border hover:bg-brand-gray transition"
+          >
+            Сбросить заказ
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="px-3 py-2 rounded-lg text-sm font-medium text-brand-gray-dark border border-brand-border hover:bg-brand-gray transition"
+          >
+            Печать / PDF
+          </button>
           <button
             type="button"
             onClick={() => navigate('/orders')}
@@ -321,8 +440,8 @@ export function OrderCalculatorPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1.65fr_1fr] gap-5">
-        <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 xl:grid-cols-[1.65fr_1fr] gap-5 print:block">
+        <div className="flex flex-col gap-5 print:hidden">
           {/* Client + product + die */}
           <section className="border border-brand-border rounded-xl p-4 bg-white">
             <div className="text-sm font-semibold text-brand-ink mb-3">Клиент, товар, нож</div>
@@ -535,6 +654,68 @@ export function OrderCalculatorPage() {
               <NumField label="Тираж, коробок" value={quantity} onChange={setQuantity} />
               <NumField label="Отход материала, %" value={waste} onChange={setWaste} />
             </div>
+
+            {result && (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-brand-border rounded-xl overflow-hidden mt-4">
+                  <div className="bg-brand-black text-white p-3">
+                    <div className="text-[10px] text-white/50">{basis === 'box' ? 'Формат развёртки' : 'Формат листа'}</div>
+                    <div className="text-sm font-semibold">{formatNumber(result.blank.w)} × {formatNumber(result.blank.h)} мм</div>
+                  </div>
+                  <div className="bg-brand-black text-white p-3">
+                    <div className="text-[10px] text-white/50">{basis === 'box' ? 'Площадь развёртки' : 'Площадь 1 листа'}</div>
+                    <div className="text-sm font-semibold">{result.sheetArea.toFixed(3)} м²</div>
+                  </div>
+                  <div className="bg-brand-black text-white p-3">
+                    <div className="text-[10px] text-white/50">Тираж листов</div>
+                    <div className="text-sm font-semibold">{formatNumber(result.sheetRun)}</div>
+                  </div>
+                  <div className="bg-brand-black text-white p-3">
+                    <div className="text-[10px] text-white/50">Общая площадь</div>
+                    <div className="text-sm font-semibold">{formatNumber(result.totalArea)} м²</div>
+                  </div>
+                </div>
+
+                <div className="mt-3 border border-brand-yellow/40 bg-brand-yellow-light/40 rounded-xl overflow-hidden">
+                  <div className="px-3 py-2 text-xs font-semibold text-brand-ink border-b border-brand-yellow/30">
+                    Выход с площади
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-brand-yellow/30">
+                    <div className="p-3">
+                      <div className="text-[10px] text-brand-gray-dark">Коробок с 1 листа</div>
+                      <div className="text-sm font-semibold text-brand-ink">{formatNumber(result.boxesPerSheet)} шт.</div>
+                    </div>
+                    <div className="p-3">
+                      <div className="text-[10px] text-brand-gray-dark">Площадь 1 коробки</div>
+                      <div className="text-sm font-semibold text-brand-ink">{result.areaPerBox.toFixed(3)} м²</div>
+                    </div>
+                    <div className="p-3">
+                      <div className="text-[10px] text-brand-gray-dark">Коробок с 1 м²</div>
+                      <div className="text-sm font-semibold text-brand-ink">{result.boxesPerSquareMeter.toFixed(2)} шт.</div>
+                    </div>
+                    <div className="p-3">
+                      <div className="text-[10px] text-brand-gray-dark">Коробок со 100 м²</div>
+                      <div className="text-sm font-semibold text-brand-ink">{Math.floor(result.boxesPer100SquareMeters)} шт.</div>
+                    </div>
+                  </div>
+                </div>
+
+                {Math.min(result.blank.w, result.blank.h) <= 1350 ? (
+                  <div className="mt-2 text-xs text-brand-gray-dark">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-600 mr-1.5" />
+                    Формат проходит: подача {formatNumber(Math.min(result.blank.w, result.blank.h))} мм при рабочей ширине 1350 мм
+                  </div>
+                ) : (
+                  <div className="mt-2 text-xs text-red-600 font-medium">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600 mr-1.5" />
+                    Не проходит: минимальная сторона {formatNumber(Math.min(result.blank.w, result.blank.h))} мм превышает 1350 мм
+                  </div>
+                )}
+                <div className="mt-1 text-xs text-brand-gray-dark">
+                  Расчётный выпуск: {formatNumber(result.calculatedOutput)} коробок • запас округления: {formatNumber(result.roundingReserve)}
+                </div>
+              </>
+            )}
           </section>
 
           {/* Step 2: board & glue */}
@@ -765,64 +946,100 @@ export function OrderCalculatorPage() {
         </div>
 
         {/* Result panel */}
-        <div className="bg-brand-black text-white rounded-2xl p-5 h-fit xl:sticky xl:top-32">
+        <div className="bg-brand-black text-white rounded-2xl p-5 h-fit xl:sticky xl:top-32 print:static print:w-full print:text-black print:bg-white">
           {result ? (
             <>
+              <div className="flex items-center justify-between text-[9px] uppercase tracking-wide text-white/45 mb-3 print:hidden">
+                <span>{viewMode === 'sales' ? 'Коммерческое предложение' : 'Управленческий расчёт'}</span>
+                <span>{formatDate(new Date().toISOString())}</span>
+              </div>
+
               <div className="text-xs text-white/50 mb-1">Цена с НДС за коробку</div>
               <div className="text-4xl font-extrabold text-brand-yellow mb-1">{formatMoney(result.saleVat)}</div>
               <div className="text-xs text-white/50 mb-4">без НДС: {formatMoney(result.saleNoVat)}</div>
 
-              <div className="grid grid-cols-2 gap-px bg-white/10 rounded-xl overflow-hidden mb-4">
-                <div className="bg-black/40 p-3">
-                  <div className="text-[10px] text-white/45">Себестоимость 1 шт.</div>
-                  <div className="text-sm font-semibold">{formatMoney(result.unitCost)}</div>
+              {viewMode === 'management' ? (
+                <>
+                  <div className="grid grid-cols-2 gap-px bg-white/10 rounded-xl overflow-hidden mb-4">
+                    <div className="bg-black/40 p-3">
+                      <div className="text-[10px] text-white/45">Себестоимость 1 шт.</div>
+                      <div className="text-sm font-semibold">{formatMoney(result.unitCost)}</div>
+                    </div>
+                    <div className="bg-black/40 p-3">
+                      <div className="text-[10px] text-white/45">Прибыль 1 шт.</div>
+                      <div className="text-sm font-semibold">{formatMoney(result.unitProfit)}</div>
+                    </div>
+                    <div className="bg-black/40 p-3">
+                      <div className="text-[10px] text-white/45">Маржа</div>
+                      <div className="text-sm font-semibold">{result.actualMargin.toFixed(2)}%</div>
+                    </div>
+                    <div className="bg-black/40 p-3">
+                      <div className="text-[10px] text-white/45">Итого заказ</div>
+                      <div className="text-sm font-semibold">{formatMoney(result.totalVat)}</div>
+                    </div>
+                  </div>
+
+                  <div className="text-xs font-semibold mb-1.5">Структура себестоимости</div>
+                  <div className="flex flex-col gap-1 text-xs text-white/70 mb-4">
+                    <Row label="Материалы" value={result.materialOrderCost} />
+                    <Row label="Клей" value={result.glueOrderCost} />
+                    <Row label="Печать" value={result.printOrderCost} />
+                    <Row label="Производство" value={result.productionOrderCost} />
+                    <Row label="Накладные" value={result.overheadOrderCost} />
+                    <Row label="Логистика" value={result.logisticsOrderCost} />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-px bg-white/10 rounded-xl overflow-hidden text-xs">
+                    <div className="bg-black/40 p-3">
+                      <div className="text-[10px] text-white/45">Бумага</div>
+                      <div>{formatNumber(result.paperWeight)} кг</div>
+                    </div>
+                    <div className="bg-black/40 p-3">
+                      <div className="text-[10px] text-white/45">Клей</div>
+                      <div>{formatNumber(result.glueWeight)} кг</div>
+                    </div>
+                    <div className="bg-black/40 p-3">
+                      <div className="text-[10px] text-white/45">Листов</div>
+                      <div>{formatNumber(result.sheetRun)}</div>
+                    </div>
+                    <div className="bg-black/40 p-3">
+                      <div className="text-[10px] text-white/45">Время маршрута</div>
+                      <div>{result.routeTime.toFixed(1)} ч</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 text-[10px] text-white/35 leading-relaxed print:hidden">
+                    Сырьё спишется со склада только когда заказ перейдёт в статус «В работе» — сейчас это предварительный расчёт.
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col gap-2 text-xs border-t border-white/10 pt-3">
+                  <OfferLine label="Клиент" value={selectedClientName} />
+                  <OfferLine label="Изделие" value={selectedProductName || 'Гофрокороб'} />
+                  <OfferLine label="Формат" value={`${formatNumber(result.blank.w)} × ${formatNumber(result.blank.h)} мм`} />
+                  <OfferLine label="Площадь 1 коробки" value={`${result.areaPerBox.toFixed(3)} м²`} />
+                  <OfferLine label="Структура" value={boardSummary || '—'} />
+                  <OfferLine label="Печать" value={printLabel} />
+                  <OfferLine label="Тираж" value={`${formatNumber(result.quantity)} коробок`} />
+                  <OfferLine label="Срок" value={`${leadTime} рабочих дней`} />
+                  <p className="text-white/40 text-[10px] leading-relaxed mt-2">
+                    Внутренняя себестоимость, нормы производства и маржа скрыты.
+                  </p>
                 </div>
-                <div className="bg-black/40 p-3">
-                  <div className="text-[10px] text-white/45">Прибыль 1 шт.</div>
-                  <div className="text-sm font-semibold">{formatMoney(result.unitProfit)}</div>
-                </div>
-                <div className="bg-black/40 p-3">
-                  <div className="text-[10px] text-white/45">Маржа</div>
-                  <div className="text-sm font-semibold">{result.actualMargin.toFixed(2)}%</div>
-                </div>
-                <div className="bg-black/40 p-3">
-                  <div className="text-[10px] text-white/45">Итого заказ</div>
-                  <div className="text-sm font-semibold">{formatMoney(result.totalVat)}</div>
-                </div>
+              )}
+
+              <div className="mt-4 border-t border-white/10 pt-3 flex items-center justify-between">
+                <span className="text-[10px] text-white/50">Итого за заказ с НДС</span>
+                <span className="text-lg font-bold text-white">{formatMoney(result.totalVat)}</span>
               </div>
 
-              <div className="text-xs font-semibold mb-1.5">Структура себестоимости</div>
-              <div className="flex flex-col gap-1 text-xs text-white/70 mb-4">
-                <Row label="Материалы" value={result.materialOrderCost} />
-                <Row label="Клей" value={result.glueOrderCost} />
-                <Row label="Печать" value={result.printOrderCost} />
-                <Row label="Производство" value={result.productionOrderCost} />
-                <Row label="Накладные" value={result.overheadOrderCost} />
-                <Row label="Логистика" value={result.logisticsOrderCost} />
-              </div>
-
-              <div className="grid grid-cols-2 gap-px bg-white/10 rounded-xl overflow-hidden text-xs">
-                <div className="bg-black/40 p-3">
-                  <div className="text-[10px] text-white/45">Бумага</div>
-                  <div>{formatNumber(result.paperWeight)} кг</div>
-                </div>
-                <div className="bg-black/40 p-3">
-                  <div className="text-[10px] text-white/45">Клей</div>
-                  <div>{formatNumber(result.glueWeight)} кг</div>
-                </div>
-                <div className="bg-black/40 p-3">
-                  <div className="text-[10px] text-white/45">Листов</div>
-                  <div>{formatNumber(result.sheetRun)}</div>
-                </div>
-                <div className="bg-black/40 p-3">
-                  <div className="text-[10px] text-white/45">Время маршрута</div>
-                  <div>{result.routeTime.toFixed(1)} ч</div>
-                </div>
-              </div>
-
-              <div className="mt-4 text-[10px] text-white/35 leading-relaxed">
-                Сырьё спишется со склада только когда заказ перейдёт в статус «В работе» — сейчас это предварительный расчёт.
-              </div>
+              <button
+                type="button"
+                onClick={copyOffer}
+                className="mt-3 w-full px-4 py-2 rounded-lg text-sm font-semibold bg-white/10 text-white hover:bg-white/20 transition print:hidden"
+              >
+                Копировать КП
+              </button>
             </>
           ) : (
             <div className="text-sm text-white/60">Загрузка настроек калькулятора…</div>
@@ -856,6 +1073,15 @@ function Row({ label, value }: { label: string; value: number }) {
     <div className="flex justify-between">
       <span>{label}</span>
       <span className="font-medium text-white">{formatMoney(value)}</span>
+    </div>
+  )
+}
+
+function OfferLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-3 border-b border-white/10 pb-2">
+      <span className="text-white/50">{label}</span>
+      <span className="text-right font-medium text-white">{value}</span>
     </div>
   )
 }
